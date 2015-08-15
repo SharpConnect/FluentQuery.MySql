@@ -254,6 +254,7 @@ namespace SharpConnect.FluentQuery
 
     public class QuerySelectSegment<S> : QuerySegment<S>
     {
+        int limit0 = -1;//default
         internal ExpressionHolder exprHolder;
         public QuerySelectSegment(QuerySegment prev)
         {
@@ -261,6 +262,17 @@ namespace SharpConnect.FluentQuery
             this.PrevSegment = prev;
             prev.NextSegment = this;
         }
+
+        /// <summary>
+        /// mysql selection limit
+        /// </summary>
+        /// <param name="number"></param>
+        public void Limit(int number)
+        {
+            limit0 = number;
+        }
+
+
         public override QuerySegmentKind SegmentKind
         {
             get
@@ -274,6 +286,7 @@ namespace SharpConnect.FluentQuery
             if (exprHolder != null)
             {
                 exprHolder.WriteToSelectStatement(selectStmt);
+                selectStmt.limit0 = limit0; 
             }
             else
             {

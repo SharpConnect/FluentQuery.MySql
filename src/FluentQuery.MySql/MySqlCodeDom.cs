@@ -25,6 +25,7 @@ namespace SharpConnect.FluentQuery
         public List<FromExpression> fromExpressions = new List<FromExpression>();
         public List<SelectExpression> selectExpressions = new List<SelectExpression>();
         public List<WhereExpression> whereExpressions = new List<WhereExpression>();
+        public int limit0 = -1;
 
     }
 
@@ -57,9 +58,11 @@ namespace SharpConnect.FluentQuery
 
             stbuilder.Append("select ");
             int j = selectStmt.selectExpressions.Count;
+            int limit0 = -1;
             if (j > 0)
             {
                 stbuilder.Append(selectStmt.selectExpressions[0].selectClause);
+                limit0 = selectStmt.limit0;
             }
             j = selectStmt.fromExpressions.Count;
             if (j > 0)
@@ -74,6 +77,10 @@ namespace SharpConnect.FluentQuery
                 stbuilder.Append(selectStmt.whereExpressions[0].whereClause);
             }
 
+            if (limit0 >= 0)
+            {
+                stbuilder.Append(" limit " + limit0);
+            }
             return stbuilder.ToString();
         }
     }
