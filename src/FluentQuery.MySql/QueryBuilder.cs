@@ -17,8 +17,8 @@ using System.Threading.Tasks;
 namespace SharpConnect.FluentQuery
 {
     public delegate bool QueryPredicate<T>(T t);
-    public delegate R QueryProduct<T, R>(T t);
-    public delegate void ItemWalk<T>(T t);
+    public delegate TResult QueryProduct<T, TResult>(T t);
+
 
     public abstract class QuerySegment
     {
@@ -56,10 +56,10 @@ namespace SharpConnect.FluentQuery
         public abstract void WriteToInsertStatement(InsertStatement insertStmt);
     }
 
-    class SelectProductHolder<S, R> : ExpressionHolder
+    class SelectProductHolder<T, TResult> : ExpressionHolder
     {
-        Expression<QueryProduct<S, R>> product;
-        public SelectProductHolder(Expression<QueryProduct<S, R>> product)
+        Expression<QueryProduct<T, TResult>> product;
+        public SelectProductHolder(Expression<QueryProduct<T, TResult>> product)
         {
             this.product = product;
         }
@@ -78,9 +78,6 @@ namespace SharpConnect.FluentQuery
             LinqExpressionTreeWalker exprWalker = new LinqExpressionTreeWalker();
             exprWalker.CreationContext = CreationContext.Insert;
             exprWalker.Start(product.Body);
-
-
-
 
         }
     }
@@ -174,6 +171,7 @@ namespace SharpConnect.FluentQuery
 
         }
     }
+
     /// <summary>
     /// simple select result
     /// </summary>
@@ -182,12 +180,12 @@ namespace SharpConnect.FluentQuery
         public R(params object[] args) { }
     }
 
-    public class FromQry<S> : QuerySegment
+    public class FromQry<T> : QuerySegment
     {
 
 
         QuerySegmentKind segmentKind;
-        List<Expression<QueryPredicate<S>>> whereClauses = new List<Expression<QueryPredicate<S>>>();
+        List<Expression<QueryPredicate<T>>> whereClauses = new List<Expression<QueryPredicate<T>>>();
         public FromQry()
         {
             this.segmentKind = QuerySegmentKind.DataSource;
@@ -200,27 +198,30 @@ namespace SharpConnect.FluentQuery
                 return this.segmentKind;
             }
         }
-        public FromQry<S> Where(Expression<QueryPredicate<S>> wherePred)
+        public FromQry<T> Where(Expression<QueryPredicate<T>> wherePred)
         {
             whereClauses.Add(wherePred);
             return this;
         }
-        public SelectQry<T> Select<T>(Expression<QueryProduct<S, T>> product)
+        public FromQry<T> OrderBy<TResult>(Expression<QueryProduct<T, TResult>> orderBy)
         {
-            var q = new SelectQry<T>(this);
-            q.exprHolder = new SelectProductHolder<S, T>(product);
+            //TODO: implement order by
+            return this;
+        }
+        public SelectQry<TRsult> Select<TRsult>(Expression<QueryProduct<T, TRsult>> product)
+        {
+            var q = new SelectQry<TRsult>(this);
+            q.exprHolder = new SelectProductHolder<T, TRsult>(product);
             return q;
         }
         public SelectQry<T> SelectInto<T>()
         {
             return new SelectQry<T>(this);
         }
-
-
         internal override void WriteToSelectStmt(SelectStatement selectStmt)
         {
             FromExpression fromExpr = new FromExpression();
-            fromExpr.dataSource = typeof(S).Name;
+            fromExpr.dataSource = typeof(T).Name;
             selectStmt.fromExpressions.Add(fromExpr);
             //-------------------------------------------------
             int j = whereClauses.Count;
@@ -246,26 +247,26 @@ namespace SharpConnect.FluentQuery
         }
         internal override void WriteToInsertStmt(InsertStatement insertStmt)
         {
-            insertStmt.targetTable = typeof(S).Name;
+            insertStmt.targetTable = typeof(T).Name;
 
         }
     }
 
 
-    public class InsertQry<S> : QuerySegment
+    public class InsertQry<T> : QuerySegment
     {
         internal ExpressionHolder exprHolder;
         public InsertQry()
         {
         }
-        public InsertQry<S> Values(Expression<QueryProduct<S, S>> product)
+        public InsertQry<T> Values(Expression<QueryProduct<T, T>> product)
         {
-            exprHolder = new SelectProductHolder<S, S>(product);
+            exprHolder = new SelectProductHolder<T, T>(product);
             return this;
         }
-        public InsertQry<S> Values<T>(Expression<QueryProduct<S, T>> product)
+        public InsertQry<T> Values<TRsult>(Expression<QueryProduct<T, TRsult>> product)
         {
-            exprHolder = new SelectProductHolder<S, T>(product);
+            exprHolder = new SelectProductHolder<T, TRsult>(product);
             return this;
 
         }
