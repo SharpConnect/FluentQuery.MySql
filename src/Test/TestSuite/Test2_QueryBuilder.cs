@@ -15,9 +15,9 @@ namespace MySqlTest.TestQueryBuilder
         [Test]
         public static void T_Select()
         {
-            var q = new FromQry<user_info>();
-            q.Where(u => u.first_name == "a")
-             .Select(u => new { u.uid, u.first_name });
+            var q = Q.From<user_info>()
+                     .Where(u => u.first_name == "a")
+                     .Select(u => new { u.uid, u.first_name });
 
             string sqlStr = MySqlStringMaker.BuildMySqlString(q);
 
@@ -27,25 +27,25 @@ namespace MySqlTest.TestQueryBuilder
         [Test]
         public static void T_Select_Limit()
         {
-            var q = new FromQry<user_info>();
-            q.Where(u => u.first_name == "a")
-             .Select(u => new { u.uid, u.first_name })
-             .Limit(10);
+            var q = Q.From<user_info>()
+                     .Where(u => u.first_name == "a")
+                     .Select(u => new { u.uid, u.first_name })
+                     .Limit(10);
 
             string sqlStr = MySqlStringMaker.BuildMySqlString(q);
 
             Report.WriteLine(sqlStr);
         }
 
-       
+
 
         [Test]
         public static void T_Select_With_Const()
         {
 
-            var q = new FromQry<user_info>();
-            q.Where(u => u.first_name == "a")
-             .Select(u => new R(u.first_name, u.last_name, 20 + 5));
+            var q = Q.From<user_info>()
+                     .Where(u => u.first_name == "a")
+                     .Select(u => new R(u.first_name, u.last_name, 20 + 5));
 
 
             string sqlStr = MySqlStringMaker.BuildMySqlString(q);
@@ -56,8 +56,8 @@ namespace MySqlTest.TestQueryBuilder
         [Test]
         public static void T_Insert()
         {
-            var q = new InsertQry<user_info>()
-                .Values(i => new user_info { first_name = "ok", last_name = "001" });
+            var q = Q.Insert<user_info>()
+                    .Values(i => new user_info { first_name = "ok", last_name = "001" });
 
             string sqlStr = MySqlStringMaker.BuildMySqlString(q);
 
@@ -66,8 +66,8 @@ namespace MySqlTest.TestQueryBuilder
         [Test]
         public static void T_Insert2()
         {
-            var q = new InsertQry<user_info>()
-                .Values(i => new { first_name = "ok", last_name = "001" });
+            var q = Q.Insert<user_info>()
+                     .Values(i => new { first_name = "ok", last_name = "001" });
 
             string sqlStr = MySqlStringMaker.BuildMySqlString(q);
 

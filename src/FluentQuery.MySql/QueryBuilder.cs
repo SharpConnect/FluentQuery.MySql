@@ -308,9 +308,10 @@ namespace SharpConnect.FluentQuery
         /// mysql selection limit
         /// </summary>
         /// <param name="number"></param>
-        public void Limit(int number)
+        public SelectQry<S> Limit(int number)
         {
             limit0 = number;
+            return this;
         }
 
 
