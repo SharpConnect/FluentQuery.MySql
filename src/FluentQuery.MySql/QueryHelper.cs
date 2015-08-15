@@ -55,7 +55,6 @@ namespace SharpConnect.FluentQuery
 
     public static class From<T>
     {
-
         public static FromQry<T> Where(Expression<QueryPredicate<T>> pred)
         {
             FromQry<T> fromQ = new FromQry<T>();
@@ -64,6 +63,23 @@ namespace SharpConnect.FluentQuery
         }
 
     }
+    public static class Join<T1, T2>
+    {
+        public static FromQry<T1, T2> Where(Expression<QueryPredicate<T1, T2>> pred)
+        {
+            FromQry<T1, T2> fromQ = new FromQry<T1, T2>();
+            fromQ.Where(pred);
+            return fromQ;
+        }
+        public static FromQry<T1, T2> On(Expression<QueryPredicate<T1, T2>> pred)
+        {
+            FromQry<T1, T2> fromQ = new FromQry<T1, T2>();
+            fromQ.Where(pred);
+            return fromQ;
+        }
+    }
+
+
     public static class Update<T>
     {
         public static UpdateQry<T> Where(Expression<QueryPredicate<T>> pred)

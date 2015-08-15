@@ -17,8 +17,10 @@ using System.Threading.Tasks;
 namespace SharpConnect.FluentQuery
 {
     public delegate bool QueryPredicate<T>(T t);
-    public delegate TResult QueryProduct<T, TResult>(T t);
+    public delegate bool QueryPredicate<T1, T2>(T1 t1, T2 t2);
 
+    public delegate TResult QueryProduct<T, TResult>(T t);
+    public delegate TResult QueryProduct<T1, T2, TResult>(T1 t1, T2 t2);
 
     public abstract class QuerySegment
     {
@@ -60,6 +62,31 @@ namespace SharpConnect.FluentQuery
     {
         Expression<QueryProduct<T, TResult>> product;
         public SelectProductHolder(Expression<QueryProduct<T, TResult>> product)
+        {
+            this.product = product;
+        }
+        public override void WriteToSelectStatement(SelectStatement selectStmt)
+        {
+            LinqExpressionTreeWalker exprWalker = new LinqExpressionTreeWalker();
+            exprWalker.CreationContext = CreationContext.Select;
+            exprWalker.Start(product.Body);
+
+            SelectExpression selectExpr = new SelectExpression();
+            selectExpr.selectClause = exprWalker.GetWalkResult();
+            selectStmt.selectExpressions.Add(selectExpr);
+        }
+        public override void WriteToInsertStatement(InsertStatement insertStmt)
+        {
+            LinqExpressionTreeWalker exprWalker = new LinqExpressionTreeWalker();
+            exprWalker.CreationContext = CreationContext.Insert;
+            exprWalker.Start(product.Body);
+
+        }
+    }
+    class SelectProductHolder<T1, T2, TResult> : ExpressionHolder
+    {
+        Expression<QueryProduct<T1, T2, TResult>> product;
+        public SelectProductHolder(Expression<QueryProduct<T1, T2, TResult>> product)
         {
             this.product = product;
         }
@@ -178,7 +205,7 @@ namespace SharpConnect.FluentQuery
     public class R
     {
         public R(params object[] args) { }
-       
+
     }
 
     public class FromQry<T> : QuerySegment
@@ -249,6 +276,88 @@ namespace SharpConnect.FluentQuery
         internal override void WriteToInsertStmt(InsertStatement insertStmt)
         {
             insertStmt.targetTable = typeof(T).Name;
+        }
+        internal override void WriteToUpdateStmt(UpdateStatement updateStmt)
+        {
+            throw new NotImplementedException();
+        }
+
+        public FromQry<T, U> Join<U>(FromQry<U> u)
+        {
+            return new FromQry<T, U>();
+        }
+    }
+    public class FromQry<T1, T2> : QuerySegment
+    {
+
+        List<Expression<QueryPredicate<T1, T2>>> whereClauses = new List<Expression<QueryPredicate<T1, T2>>>();
+        public FromQry()
+        {
+
+        }
+
+        public override QuerySegmentKind SegmentKind
+        {
+            get
+            {
+                return QuerySegmentKind.DataSource;
+            }
+        }
+        public FromQry<T1, T2> Where(Expression<QueryPredicate<T1, T2>> wherePred)
+        {
+            whereClauses.Add(wherePred);
+            return this;
+        }
+        public FromQry<T1, T2> OrderBy<TResult>(Expression<QueryProduct<T1, T2, TResult>> orderBy)
+        {
+            //TODO: implement order by
+            return this;
+        }
+        public SelectQry<TRsult> Select<TRsult>(Expression<QueryProduct<T1, T2, TRsult>> product)
+        {
+            var q = new SelectQry<TRsult>(this);
+            q.exprHolder = new SelectProductHolder<T1, T2, TRsult>(product);
+            return q;
+        }
+        public SelectQry<U> SelectInto<U>()
+        {
+            //select into another type
+            return new SelectQry<U>(this);
+        }
+
+
+        internal override void WriteToSelectStmt(SelectStatement selectStmt)
+        {
+            throw new NotSupportedException();
+
+            //FromExpression fromExpr = new FromExpression();
+            //fromExpr.dataSource = typeof(T).Name;
+            //selectStmt.fromExpressions.Add(fromExpr);
+            ////-------------------------------------------------
+            //int j = whereClauses.Count;
+            //if (j > 0)
+            //{
+            //    //create where clause
+            //    LinqExpressionTreeWalker walker = new LinqExpressionTreeWalker();
+            //    walker.CreationContext = CreationContext.WhereClause;
+
+
+            //    for (int i = 0; i < j; ++i)
+            //    {
+            //        WhereExpression whereExpr = new WhereExpression();
+
+            //        var whereClause = whereClauses[i];
+            //        walker.Start(whereClause.Body);
+
+            //        whereExpr.whereClause = walker.GetWalkResult();
+            //        selectStmt.whereExpressions.Add(whereExpr);
+            //    }
+            //}
+
+        }
+        internal override void WriteToInsertStmt(InsertStatement insertStmt)
+        {
+            throw new NotImplementedException();
         }
         internal override void WriteToUpdateStmt(UpdateStatement updateStmt)
         {

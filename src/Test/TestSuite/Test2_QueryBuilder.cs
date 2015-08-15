@@ -84,6 +84,30 @@ namespace MySqlTest.TestQueryBuilder
             Report.WriteLine(sqlStr);
         }
 
+
+        [Test]
+        public static void T_Join()
+        {
+            //?
+            var q = From<user_info>
+                     .Where(u => u.first_name == "a002")
+                     .Join(
+                            From<user_address>
+                                .Where(a => a.areadCode == "101"));
+
+
+        }
+        [Test]
+        public static void T_Join2()
+        {
+            //?
+            var q = Join<user_info, user_address>
+                      .On((u, a) => u.first_name == a.areadCode)
+                      .Where((u, a) => u.first_name == "m")
+                      .Select((u, a) => new { u.last_name, a.streetNo });
+
+
+        }
         //------------------------------------------------------------------------
         [Test]
         public static void T_Insert()
@@ -109,9 +133,9 @@ namespace MySqlTest.TestQueryBuilder
             Report.WriteLine(sqlStr);
         }
         [Test]
-        public static void T_Insert()
+        public static void T_Insert3()
         {
-            var q = Q.InsertInto<user_info>()
+            var q = InsertInto<user_info>
                     .Values(i => new user_info { first_name = "ok", last_name = "001" });
 
             string sqlStr = MySqlStringMaker.BuildMySqlString(q);
@@ -122,9 +146,9 @@ namespace MySqlTest.TestQueryBuilder
 
 
         [Test]
-        public static void T_Insert2()
+        public static void T_Insert4()
         {
-            var q = Q.InsertInto<user_info>()
+            var q = InsertInto<user_info>
                      .Values(i => new { first_name = "ok", last_name = "001" });
 
             string sqlStr = MySqlStringMaker.BuildMySqlString(q);
@@ -185,6 +209,12 @@ namespace MySqlTest.TestQueryBuilder
         public int uid;
         public string first_name;
         public string last_name;
+    }
+    class user_address
+    {
+        public string no;
+        public string streetNo;
+        public string areadCode;
     }
 
 }
