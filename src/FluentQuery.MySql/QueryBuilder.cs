@@ -185,18 +185,16 @@ namespace SharpConnect.FluentQuery
     }
 
 
-    public class QuerySegment<S> : QuerySegment
+    public class FromQry<S> : QuerySegment
     {
 
 
         QuerySegmentKind segmentKind;
         List<Expression<QueryPredicate<S>>> whereClauses = new List<Expression<QueryPredicate<S>>>();
-        public QuerySegment()
+        public FromQry()
         {
             this.segmentKind = QuerySegmentKind.DataSource;
-        }
-
-
+        } 
         public override QuerySegmentKind SegmentKind
         {
             get
@@ -204,23 +202,21 @@ namespace SharpConnect.FluentQuery
                 return this.segmentKind;
             }
         }
-        public QuerySegment<S> Where(Expression<QueryPredicate<S>> wherePred)
+        public FromQry<S> Where(Expression<QueryPredicate<S>> wherePred)
         {
             whereClauses.Add(wherePred);
             return this;
         }
-        public QuerySelectSegment<R> Select<R>(Expression<QueryProduct<S, R>> product)
+        public SelectQry<R> Select<R>(Expression<QueryProduct<S, R>> product)
         {
-            var q = new QuerySelectSegment<R>(this);
+            var q = new SelectQry<R>(this);
             q.exprHolder = new SelectProductHolder<S, R>(product);
             return q;
         }
-        public QuerySelectSegment<R> SelectInto<R>()
+        public SelectQry<R> SelectInto<R>()
         {
-            return new QuerySelectSegment<R>(this);
-        }
-
-
+            return new SelectQry<R>(this);
+        }  
         internal override void WriteToSelectStmt(SelectStatement selectStmt)
         {
             FromExpression fromExpr = new FromExpression();
@@ -252,11 +248,11 @@ namespace SharpConnect.FluentQuery
 
     }
 
-    public class QuerySelectSegment<S> : QuerySegment<S>
+    public class SelectQry<S> : QuerySegment
     {
         int limit0 = -1;//default
         internal ExpressionHolder exprHolder;
-        public QuerySelectSegment(QuerySegment prev)
+        public SelectQry(QuerySegment prev)
         {
 
             this.PrevSegment = prev;

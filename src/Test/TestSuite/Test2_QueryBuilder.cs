@@ -15,7 +15,7 @@ namespace MySqlTest.TestQueryBuilder
         [Test]
         public static void T_Select()
         {
-            var q = new QuerySegment<user_info>();
+            var q = new FromQry<user_info>();
             q.Where(u => u.first_name == "a")
              .Select(u => new { u.uid, u.first_name });
 
@@ -27,7 +27,7 @@ namespace MySqlTest.TestQueryBuilder
         [Test]
         public static void T_Select_Limit()
         {
-            var q = new QuerySegment<user_info>();
+            var q = new FromQry<user_info>();
             q.Where(u => u.first_name == "a")
              .Select(u => new { u.uid, u.first_name })
              .Limit(10); 
