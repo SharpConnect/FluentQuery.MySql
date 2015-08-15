@@ -205,16 +205,17 @@ namespace SharpConnect.FluentQuery
             whereClauses.Add(wherePred);
             return this;
         }
-        public SelectQry<R> Select<R>(Expression<QueryProduct<S, R>> product)
+        public SelectQry<T> Select<T>(Expression<QueryProduct<S, T>> product)
         {
-            var q = new SelectQry<R>(this);
-            q.exprHolder = new SelectProductHolder<S, R>(product);
+            var q = new SelectQry<T>(this);
+            q.exprHolder = new SelectProductHolder<S, T>(product);
             return q;
         }
-        public SelectQry<R> SelectInto<R>()
+        public SelectQry<T> SelectInto<T>()
         {
-            return new SelectQry<R>(this);
+            return new SelectQry<T>(this);
         }
+
 
         internal override void WriteToSelectStmt(SelectStatement selectStmt)
         {
@@ -262,9 +263,9 @@ namespace SharpConnect.FluentQuery
             exprHolder = new SelectProductHolder<S, S>(product);
             return this;
         }
-        public InsertQry<S> Values<R>(Expression<QueryProduct<S, R>> product)
+        public InsertQry<S> Values<T>(Expression<QueryProduct<S, T>> product)
         {
-            exprHolder = new SelectProductHolder<S, R>(product);
+            exprHolder = new SelectProductHolder<S, T>(product);
             return this;
 
         }

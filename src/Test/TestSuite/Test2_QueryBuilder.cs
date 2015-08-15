@@ -53,6 +53,7 @@ namespace MySqlTest.TestQueryBuilder
             Report.WriteLine(sqlStr);
         }
 
+       
         [Test]
         public static void T_Insert()
         {
