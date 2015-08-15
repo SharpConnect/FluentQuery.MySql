@@ -42,8 +42,21 @@ namespace SharpConnect.FluentQuery
                 return CodeStatementKind.Select;
             }
         }
-
     }
+    public class UpdateStatement : CodeStatement
+    {
+        public List<UpdateExpression> updateSets = new List<UpdateExpression>();
+        public List<WhereExpression> whereExpressions = new List<WhereExpression>();
+        public int limit0 = -1;
+        public override CodeStatementKind StatementKind
+        {
+            get
+            {
+                return CodeStatementKind.Update;
+            }
+        }
+    }
+
     public class InsertStatement : CodeStatement
     {
         public string targetTable;
@@ -56,6 +69,10 @@ namespace SharpConnect.FluentQuery
         }
     }
 
+    public class UpdateExpression : CodeExpression
+    {
+        public string updateClause;
+    }
     public class WhereExpression : CodeExpression
     {
         public string whereClause;

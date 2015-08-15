@@ -29,7 +29,7 @@ namespace SharpConnect.FluentQuery
 
         internal abstract void WriteToSelectStmt(SelectStatement selectStmt);
         internal abstract void WriteToInsertStmt(InsertStatement insertStmt);
-
+        internal abstract void WriteToUpdateStmt(UpdateStatement updateStmt);
 
         public CodeStatement MakeCodeStatement()
         {
@@ -178,24 +178,23 @@ namespace SharpConnect.FluentQuery
     public class R
     {
         public R(params object[] args) { }
+       
     }
 
     public class FromQry<T> : QuerySegment
     {
 
-
-        QuerySegmentKind segmentKind;
         List<Expression<QueryPredicate<T>>> whereClauses = new List<Expression<QueryPredicate<T>>>();
         public FromQry()
         {
-            this.segmentKind = QuerySegmentKind.DataSource;
+
         }
 
         public override QuerySegmentKind SegmentKind
         {
             get
             {
-                return this.segmentKind;
+                return QuerySegmentKind.DataSource;
             }
         }
         public FromQry<T> Where(Expression<QueryPredicate<T>> wherePred)
@@ -214,10 +213,12 @@ namespace SharpConnect.FluentQuery
             q.exprHolder = new SelectProductHolder<T, TRsult>(product);
             return q;
         }
-        public SelectQry<T> SelectInto<T>()
+        public SelectQry<U> SelectInto<U>()
         {
-            return new SelectQry<T>(this);
+            //select into another type
+            return new SelectQry<U>(this);
         }
+
         internal override void WriteToSelectStmt(SelectStatement selectStmt)
         {
             FromExpression fromExpr = new FromExpression();
@@ -248,7 +249,10 @@ namespace SharpConnect.FluentQuery
         internal override void WriteToInsertStmt(InsertStatement insertStmt)
         {
             insertStmt.targetTable = typeof(T).Name;
-
+        }
+        internal override void WriteToUpdateStmt(UpdateStatement updateStmt)
+        {
+            throw new NotImplementedException();
         }
     }
 
@@ -293,9 +297,66 @@ namespace SharpConnect.FluentQuery
         {
             throw new NotImplementedException();
         }
+        internal override void WriteToUpdateStmt(UpdateStatement updateStmt)
+        {
+            throw new NotImplementedException();
+        }
     }
 
-    public class SelectQry<S> : QuerySegment
+    public class UpdateQry<T> : QuerySegment
+    {
+        int limit0 = -1;//default
+        internal ExpressionHolder exprHolder;
+        List<Expression<QueryPredicate<T>>> whereClauses = new List<Expression<QueryPredicate<T>>>();
+        /// <summary>
+        /// mysql selection limit
+        /// </summary>
+        /// <param name="number"></param>
+        public UpdateQry<T> Limit(int number)
+        {
+            limit0 = number;
+            return this;
+        }
+        public override QuerySegmentKind SegmentKind
+        {
+            get
+            {
+                return QuerySegmentKind.Update;
+            }
+        }
+
+        public UpdateQry<T> Where(Expression<QueryPredicate<T>> wherePred)
+        {
+            whereClauses.Add(wherePred);
+            return this;
+        }
+        public UpdateQry<T> Set(Expression<QueryProduct<T, T>> product)
+        {
+            this.exprHolder = new SelectProductHolder<T, T>(product);
+            return this;
+        }
+        public UpdateQry<T> Set<TResult>(Expression<QueryProduct<T, TResult>> product)
+        {
+            this.exprHolder = new SelectProductHolder<T, TResult>(product);
+            return this;
+        }
+        internal override void WriteToInsertStmt(InsertStatement insertStmt)
+        {
+            throw new NotImplementedException();
+        }
+        internal override void WriteToSelectStmt(SelectStatement selectStmt)
+        {
+            throw new NotImplementedException();
+        }
+        internal override void WriteToUpdateStmt(UpdateStatement updateStmt)
+        {
+            throw new NotImplementedException();
+        }
+
+    }
+
+
+    public class SelectQry<T> : QuerySegment
     {
         int limit0 = -1;//default
         internal ExpressionHolder exprHolder;
@@ -310,7 +371,7 @@ namespace SharpConnect.FluentQuery
         /// mysql selection limit
         /// </summary>
         /// <param name="number"></param>
-        public SelectQry<S> Limit(int number)
+        public SelectQry<T> Limit(int number)
         {
             limit0 = number;
             return this;
@@ -340,6 +401,10 @@ namespace SharpConnect.FluentQuery
         internal override void WriteToInsertStmt(InsertStatement insertStmt)
         {
             throw new NotSupportedException();
+        }
+        internal override void WriteToUpdateStmt(UpdateStatement updateStmt)
+        {
+            throw new NotImplementedException();
         }
     }
 

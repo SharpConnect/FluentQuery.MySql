@@ -87,6 +87,31 @@ namespace MySqlTest.TestQueryBuilder
 
             Report.WriteLine(sqlStr);
         }
+        //------------------------------------------------------------------------
+        [Test]
+        public static void T_Update()
+        {
+            var q = Q.Update<user_info>()
+                     .Set(u => new user_info { first_name = "ok" });
+
+            string sqlStr = MySqlStringMaker.BuildMySqlString(q);
+
+            Report.WriteLine(sqlStr);
+        }
+        [Test]
+        public static void T_Update2()
+        {
+            var q = Q.Update<user_info>()
+                     .Where(u => u.first_name == "mmm")
+                     .Set(u => new R(u.first_name, "ok",
+                                     u.last_name, "12345"));
+
+
+
+            string sqlStr = MySqlStringMaker.BuildMySqlString(q);
+
+            Report.WriteLine(sqlStr);
+        }
 
     }
 

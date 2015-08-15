@@ -40,6 +40,18 @@ namespace SharpConnect.FluentQuery
         {
             return new InsertQry<T>();
         }
+        /// <summary>
+        /// insert into
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public static UpdateQry<T> Update<T>()
+        {
+            return new UpdateQry<T>();
+        }
+
+
+
 
     }
 }
