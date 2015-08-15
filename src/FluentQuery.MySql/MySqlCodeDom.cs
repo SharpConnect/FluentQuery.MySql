@@ -46,6 +46,11 @@ namespace SharpConnect.FluentQuery
 
     public static class MySqlStringMaker
     {
+        public static string BuildMySqlString(QuerySegment q)
+        {
+            var codeStmt = q.MakeCodeStatement();
+            return MySqlStringMaker.BuildMySqlString((SelectStatement)codeStmt);
+        }
         public static string BuildMySqlString(SelectStatement selectStmt)
         {
             StringBuilder stbuilder = new StringBuilder();
