@@ -36,7 +36,7 @@ namespace SharpConnect.FluentQuery
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static InsertQry<T> Insert<T>()
+        public static InsertQry<T> InsertInto<T>()
         {
             return new InsertQry<T>();
         }
@@ -51,7 +51,44 @@ namespace SharpConnect.FluentQuery
         }
 
 
+    }
 
+    public static class From<T>
+    {
 
+        public static FromQry<T> Where(Expression<QueryPredicate<T>> pred)
+        {
+            FromQry<T> fromQ = new FromQry<T>();
+            fromQ.Where(pred);
+            return fromQ;
+        }
+
+    }
+    public static class Update<T>
+    {
+        public static UpdateQry<T> Where(Expression<QueryPredicate<T>> pred)
+        {
+            UpdateQry<T> updateQ = new UpdateQry<T>();
+            updateQ.Where(pred);
+            return updateQ;
+        }
+        public static UpdateQry<T> Set<TResult>(Expression<QueryProduct<T, TResult>> setClause)
+        {
+            UpdateQry<T> updateQ = new UpdateQry<T>();
+            updateQ.Set(setClause);
+            return updateQ;
+
+        }
+    }
+    public static class InsertInto<T>
+    {
+        public static InsertQry<T> Values<TResult>(Expression<QueryProduct<T, TResult>> setClause)
+        {
+
+            InsertQry<T> insertQ = new InsertQry<T>();
+            insertQ.Values(setClause);
+            return insertQ;
+
+        }
     }
 }
