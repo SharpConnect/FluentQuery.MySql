@@ -214,7 +214,7 @@ namespace SharpConnect.FluentQuery
                         int i = 0;
                         foreach (var arg in node.Arguments)
                         {
-                           
+
 
                             if (i > 0)
                             {
@@ -235,7 +235,28 @@ namespace SharpConnect.FluentQuery
         }
         protected override Expression VisitNewArray(NewArrayExpression node)
         {
-            return base.VisitNewArray(node);
+            switch (CreationContext)
+            {
+                case CreationContext.Select:
+                    {
+                        int j = node.Expressions.Count;
+                        for (int i = 0; i < j; ++i)
+                        {
+
+                            if (i > 0)
+                            {
+                                stbuilder.Append(',');
+                            }
+                            Visit(node.Expressions[i]);
+
+                        }
+                    }
+                    return node;
+                default:
+                    throw new NotSupportedException();
+            }
+
+
         }
         protected override Expression VisitParameter(ParameterExpression node)
         {
@@ -263,7 +284,41 @@ namespace SharpConnect.FluentQuery
         }
         protected override Expression VisitUnary(UnaryExpression node)
         {
-            return base.VisitUnary(node);
+
+            switch (CreationContext)
+            {
+                case CreationContext.Select:
+                    switch (node.NodeType)
+                    {
+                        case ExpressionType.Convert:
+
+                            if (node.Operand.Type.IsPrimitive)
+                            {
+                                if (node.Operand.Type == typeof(string) ||
+                                    node.Operand.Type == typeof(char))
+                                {
+                                }
+                                else
+                                {
+                                    stbuilder.Append(node.Operand.ToString());
+
+                                }
+                            }
+                            else
+                            {
+
+                            }
+                            break;
+                        default:
+                            throw new NotSupportedException();
+                    }
+                    return node;
+                    
+                default:
+                    throw new NotSupportedException();
+            }
+
+
         }
 
     }

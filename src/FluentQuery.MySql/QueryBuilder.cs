@@ -174,7 +174,13 @@ namespace SharpConnect.FluentQuery
 
         }
     }
-
+    /// <summary>
+    /// simple select result
+    /// </summary>
+    public class R
+    {
+        public R(params object[] args) { }
+    }
 
     public class FromQry<S> : QuerySegment
     {

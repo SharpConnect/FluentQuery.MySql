@@ -37,7 +37,21 @@ namespace MySqlTest.TestQueryBuilder
             Report.WriteLine(sqlStr);
         }
 
+       
 
+        [Test]
+        public static void T_Select_With_Const()
+        {
+
+            var q = new FromQry<user_info>();
+            q.Where(u => u.first_name == "a")
+             .Select(u => new R(u.first_name, u.last_name, 20 + 5));
+
+
+            string sqlStr = MySqlStringMaker.BuildMySqlString(q);
+
+            Report.WriteLine(sqlStr);
+        }
 
         [Test]
         public static void T_Insert()
@@ -51,14 +65,14 @@ namespace MySqlTest.TestQueryBuilder
         }
         [Test]
         public static void T_Insert2()
-        { 
+        {
             var q = new InsertQry<user_info>()
-                .Values(i => new { first_name = "ok", last_name = "001" });  
+                .Values(i => new { first_name = "ok", last_name = "001" });
 
             string sqlStr = MySqlStringMaker.BuildMySqlString(q);
 
             Report.WriteLine(sqlStr);
-        } 
+        }
 
     }
 
