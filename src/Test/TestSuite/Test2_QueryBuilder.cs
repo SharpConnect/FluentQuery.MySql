@@ -53,7 +53,20 @@ namespace MySqlTest.TestQueryBuilder
             Report.WriteLine(sqlStr);
         }
 
-       
+        [Test]
+        public static void T_Select_OrderBy()
+        {
+
+            var q = Q.From<user_info>()
+                     .Where(u => u.first_name == "a")
+                     .OrderBy(u => u.first_name)
+                     .Select(u => new R(u.first_name, u.last_name, 20 + 5));
+
+
+            string sqlStr = MySqlStringMaker.BuildMySqlString(q);
+
+            Report.WriteLine(sqlStr);
+        }
         [Test]
         public static void T_Insert()
         {
