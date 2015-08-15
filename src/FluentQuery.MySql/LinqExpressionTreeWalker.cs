@@ -21,7 +21,8 @@ namespace SharpConnect.FluentQuery
     {
         WhereClause,
         Select,
-        From
+        From,
+        Insert,
     }
 
     class LinqExpressionTreeWalker : DynamicExpressionVisitor

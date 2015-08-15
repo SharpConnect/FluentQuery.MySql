@@ -30,13 +30,35 @@ namespace MySqlTest.TestQueryBuilder
             var q = new FromQry<user_info>();
             q.Where(u => u.first_name == "a")
              .Select(u => new { u.uid, u.first_name })
-             .Limit(10); 
+             .Limit(10);
 
             string sqlStr = MySqlStringMaker.BuildMySqlString(q);
 
             Report.WriteLine(sqlStr);
         }
 
+
+
+        [Test]
+        public static void T_Insert()
+        {
+            var q = new InsertQry<user_info>()
+                .Values(i => new user_info { first_name = "ok", last_name = "001" });
+
+            string sqlStr = MySqlStringMaker.BuildMySqlString(q);
+
+            Report.WriteLine(sqlStr);
+        }
+        [Test]
+        public static void T_Insert2()
+        { 
+            var q = new InsertQry<user_info>()
+                .Values(i => new { first_name = "ok", last_name = "001" });  
+
+            string sqlStr = MySqlStringMaker.BuildMySqlString(q);
+
+            Report.WriteLine(sqlStr);
+        } 
 
     }
 

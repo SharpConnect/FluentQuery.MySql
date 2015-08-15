@@ -18,6 +18,7 @@ namespace SharpConnect.FluentQuery
 {
     public delegate bool QueryPredicate<T>(T t);
     public delegate R QueryProduct<T, R>(T t);
+    public delegate void ItemWalk<T>(T t);
 
     public abstract class QuerySegment
     {
@@ -26,10 +27,9 @@ namespace SharpConnect.FluentQuery
         public abstract QuerySegmentKind SegmentKind { get; }
 
 
-        internal virtual void WriteToSelectStmt(SelectStatement selectStmt)
-        {
+        internal abstract void WriteToSelectStmt(SelectStatement selectStmt);
+        internal abstract void WriteToInsertStmt(InsertStatement insertStmt);
 
-        }
 
         public CodeStatement MakeCodeStatement()
         {
@@ -43,13 +43,17 @@ namespace SharpConnect.FluentQuery
     {
         DataSource,
         Where,
-        Select
+        Select,
+        Insert,
+        Delete,
+        Update,
     }
 
     abstract class ExpressionHolder
     {
 
         public abstract void WriteToSelectStatement(SelectStatement selectStmt);
+        public abstract void WriteToInsertStatement(InsertStatement insertStmt);
     }
 
     class SelectProductHolder<S, R> : ExpressionHolder
@@ -68,46 +72,17 @@ namespace SharpConnect.FluentQuery
             SelectExpression selectExpr = new SelectExpression();
             selectExpr.selectClause = exprWalker.GetWalkResult();
             selectStmt.selectExpressions.Add(selectExpr);
+        }
+        public override void WriteToInsertStatement(InsertStatement insertStmt)
+        {
+            LinqExpressionTreeWalker exprWalker = new LinqExpressionTreeWalker();
+            exprWalker.CreationContext = CreationContext.Insert;
+            exprWalker.Start(product.Body);
+
+
+
 
         }
-        //public override void BuildSql(StringBuilder stbuilder)
-        //{
-        //    var body = product.Body;
-        //    switch (body.NodeType)
-        //    {
-        //        case ExpressionType.New:
-        //            //select to new type
-
-        //            stbuilder.Append("select ");
-        //            int i = 0;
-        //            NewExpression newExpr = (NewExpression)body;
-
-        //            foreach (var arg in newExpr.Arguments)
-        //            {
-        //                //expr
-        //                //and member
-        //                if (i > 0)
-        //                {
-        //                    stbuilder.Append(',');
-        //                }
-        //                switch (arg.NodeType)
-        //                {
-        //                    case ExpressionType.MemberAccess:
-        //                        MemberExpression mbExpr = (MemberExpression)arg;
-        //                        stbuilder.Append(mbExpr.Member.Name);
-
-        //                        break;
-        //                    default:
-        //                        throw new NotSupportedException();
-        //                }
-        //                i++;
-        //            }
-        //            break;
-        //        default:
-        //            throw new NotSupportedException();
-        //    }
-        //}
-
     }
 
 
@@ -139,6 +114,7 @@ namespace SharpConnect.FluentQuery
             int j = nodeList.Count;
             QuerySegment fromSource = null;
             QuerySegment selectClause = null;
+            QuerySegment insertClause = null;
 
             int state = 0;
             for (int i = 0; i < j; ++i)
@@ -158,6 +134,9 @@ namespace SharpConnect.FluentQuery
                             fromSource = node;
                         }
                         break;
+                    case QuerySegmentKind.Insert:
+                        insertClause = node;
+                        break;
                     default:
                         throw new NotSupportedException();
                 }
@@ -174,6 +153,18 @@ namespace SharpConnect.FluentQuery
                 }
                 selectClause.WriteToSelectStmt(selectStmt);
                 return selectStmt;
+
+            }
+            else if (insertClause != null)
+            {
+                InsertStatement insertStatement = new InsertStatement();
+                if (fromSource != null)
+                {
+                    fromSource.WriteToInsertStmt(insertStatement);
+                }
+
+                insertClause.WriteToInsertStmt(insertStatement);
+                return insertStatement;
 
             }
             else
@@ -194,7 +185,8 @@ namespace SharpConnect.FluentQuery
         public FromQry()
         {
             this.segmentKind = QuerySegmentKind.DataSource;
-        } 
+        }
+
         public override QuerySegmentKind SegmentKind
         {
             get
@@ -216,7 +208,8 @@ namespace SharpConnect.FluentQuery
         public SelectQry<R> SelectInto<R>()
         {
             return new SelectQry<R>(this);
-        }  
+        }
+
         internal override void WriteToSelectStmt(SelectStatement selectStmt)
         {
             FromExpression fromExpr = new FromExpression();
@@ -244,8 +237,54 @@ namespace SharpConnect.FluentQuery
             }
 
         }
+        internal override void WriteToInsertStmt(InsertStatement insertStmt)
+        {
+            insertStmt.targetTable = typeof(S).Name;
+
+        }
+    }
 
 
+    public class InsertQry<S> : QuerySegment
+    {
+        internal ExpressionHolder exprHolder;
+        public InsertQry()
+        {
+        }
+        public InsertQry<S> Values(Expression<QueryProduct<S, S>> product)
+        {
+            exprHolder = new SelectProductHolder<S, S>(product);
+            return this;
+        }
+        public InsertQry<S> Values<R>(Expression<QueryProduct<S, R>> product)
+        {
+            exprHolder = new SelectProductHolder<S, R>(product);
+            return this;
+
+        }
+        public override QuerySegmentKind SegmentKind
+        {
+            get
+            {
+                return QuerySegmentKind.Insert;
+            }
+        }
+        internal override void WriteToInsertStmt(InsertStatement insertStmt)
+        {
+            if (exprHolder != null)
+            {
+                exprHolder.WriteToInsertStatement(insertStmt);
+
+            }
+            else
+            {
+                throw new NotSupportedException();
+            }
+        }
+        internal override void WriteToSelectStmt(SelectStatement selectStmt)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class SelectQry<S> : QuerySegment
@@ -282,12 +321,16 @@ namespace SharpConnect.FluentQuery
             if (exprHolder != null)
             {
                 exprHolder.WriteToSelectStatement(selectStmt);
-                selectStmt.limit0 = limit0; 
+                selectStmt.limit0 = limit0;
             }
             else
             {
                 throw new NotSupportedException();
             }
+        }
+        internal override void WriteToInsertStmt(InsertStatement insertStmt)
+        {
+            throw new NotSupportedException();
         }
     }
 
