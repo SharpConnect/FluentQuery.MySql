@@ -23,8 +23,8 @@ namespace MySqlTest.TestQueryBuilder
         public static void T_Select_Linq()
         {
 
-            var q = from u in Q2.Table<user_info>()
-                    where u.first_name == "ok"
+            var q = from u in Q2.Provide<user_info>()
+                    where u.first_name == "ok" && u.last_name == "mm"
                     select new { u.first_name, u.last_name };
 
 

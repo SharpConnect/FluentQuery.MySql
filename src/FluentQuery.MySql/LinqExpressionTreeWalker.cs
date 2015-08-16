@@ -379,6 +379,12 @@ namespace SharpConnect.FluentQuery
                             case ExpressionType.LessThan:
                                 stbuilder.Append("<");
                                 break;
+                            case ExpressionType.AndAlso:
+                                stbuilder.Append(" and ");
+                                break;
+                            case ExpressionType.OrElse:
+                                stbuilder.Append(" or ");
+                                break;
                             default:
                                 throw new NotSupportedException();
                         }

@@ -19,7 +19,7 @@ namespace SharpConnect.FluentQuery
 {
     public static class Q2
     {
-        public static IQueryable<T> Table<T>()
+        public static IQueryable<T> Provide<T>()
         {
             return new MyQueryContext<T>();
         }
