@@ -25,6 +25,14 @@ namespace SharpConnect.FluentQuery
         }
     }
 
+    public static class MySqlExtension
+    {
+        public static IQueryable<T> Limit<T>(this IQueryable<T> q, int limit)
+        {
+            ((MyQueryContext<T>)q).SelectLimit = limit;
+            return q;
+        }
+    }
     public static class MySqlStringMake2
     {
         public static string MakeMySqlString<T>(this IQueryable<T> q)
@@ -35,8 +43,17 @@ namespace SharpConnect.FluentQuery
                 MethodCallExpression callExpr = (MethodCallExpression)expr;
                 if (callExpr.Method.Name == "Select")
                 {
+                    MyQueryContext<T> qContext = (MyQueryContext<T>)q;
                     SelectStatement selectStatement = new SelectStatement();
                     WriteSelectStatement(selectStatement, callExpr);
+
+                    //-----
+                    //mysql specific features
+                    if (qContext.SelectLimit > -1)
+                    {
+                        selectStatement.limit0 = qContext.SelectLimit;
+                    }
+
                     return MySqlStringMaker.BuildMySqlString(selectStatement);
                 }
             }
@@ -140,16 +157,20 @@ namespace SharpConnect.FluentQuery
     {
         MyQProvider provider;
         Expression expr;
+
+
+
         public MyQueryContext()
         {
             this.provider = new MyQProvider();
             this.expr = Expression.Constant(this);
+            this.SelectLimit = -1;
         }
-
         public MyQueryContext(MyQProvider provider, Expression expr)
         {
             this.provider = provider;
             this.expr = expr;
+            this.SelectLimit = -1;
         }
         public Expression Expression
         {
@@ -173,6 +194,10 @@ namespace SharpConnect.FluentQuery
             {
                 return this.provider;
             }
+        }
+        public int SelectLimit
+        {
+            get; set;
         }
 
 
