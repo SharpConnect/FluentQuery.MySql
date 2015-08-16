@@ -16,55 +16,7 @@ using SharpConnect.FluentQuery;
 namespace MySqlTest.TestQueryBuilder
 {
 
-    public static class MySqlStringMake2
-    {
-        public static string MakeMySqlString<T>(this IQueryable<T> q)
-        {
-            var expr = q.Expression;
-            if (expr.NodeType == ExpressionType.Call)
-            {
-                MethodCallExpression callExpr = (MethodCallExpression)expr;
-                if (callExpr.Method.Name == "Select")
-                {
-                    //select
-                    //arg of select
-                    foreach (var arg in callExpr.Arguments)
-                    {
-                        if (arg.NodeType == ExpressionType.Call)
-                        {
-                            //go deeper
-                            MethodCallExpression argCall = (MethodCallExpression)arg;
-                            switch (argCall.Method.Name)
-                            {
-                                case "Where":
-                                    {
-
-                                    }
-                                    break;
-                                default:
-                                    {
-
-                                    }
-                                    break;
-                            }
-                        }
-                        else
-                        {
-
-                        }
-                    }
-
-                }
-
-
-            }
-
-            return "";
-        }
-    }
-
-
-
+    
 
 
     public class TestSet3

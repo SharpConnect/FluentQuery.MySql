@@ -35,6 +35,7 @@
   <ItemGroup>
     <Compile Include="LinqExpressionTreeWalker.cs" />
     <Compile Include="MySqlCodeDom.cs" />
+    <Compile Include="MySqlMaker2.cs" />
     <Compile Include="QueryBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueryHelper.cs" />
