@@ -78,6 +78,7 @@ namespace MySqlTest.TestQueryBuilder
                      .OrderBy(u => u.first_name)
                      .Select(u => new R(u.first_name, u.last_name, 20 + 5));
 
+            
 
             string sqlStr = MySqlStringMaker.BuildMySqlString(q);
 
