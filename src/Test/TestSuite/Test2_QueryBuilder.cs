@@ -22,8 +22,7 @@ namespace MySqlTest.TestQueryBuilder
                      .Where(u => u.first_name == "a")
                      .Select(u => new { u.uid, u.first_name });
 
-            string sqlStr = MySqlStringMaker.BuildMySqlString(q);
-
+            string sqlStr = q.BuildMySqlString();
             Report.WriteLine(sqlStr);
         }
         [Test]
@@ -34,7 +33,7 @@ namespace MySqlTest.TestQueryBuilder
                      .Where(u => u.first_name == "a")
                      .Select(); //TODO: implement simple select
 
-            string sqlStr = MySqlStringMaker.BuildMySqlString(q);
+            string sqlStr = q.BuildMySqlString();
 
             Report.WriteLine(sqlStr);
         }
@@ -47,7 +46,7 @@ namespace MySqlTest.TestQueryBuilder
                      .Where(u => u.first_name == "a")
                      .Select(u => new { u.uid, u.first_name });
 
-            string sqlStr = MySqlStringMaker.BuildMySqlString(q);
+            string sqlStr = q.BuildMySqlString();
 
             Report.WriteLine(sqlStr);
         }
@@ -61,7 +60,7 @@ namespace MySqlTest.TestQueryBuilder
                      .Select(u => new { u.uid, u.first_name })
                      .Limit(10);
 
-            string sqlStr = MySqlStringMaker.BuildMySqlString(q);
+            string sqlStr = q.BuildMySqlString();
 
             Report.WriteLine(sqlStr);
         }
@@ -77,7 +76,7 @@ namespace MySqlTest.TestQueryBuilder
                      .Select(u => new R(u.first_name, u.last_name, 20 + 5));
 
 
-            string sqlStr = MySqlStringMaker.BuildMySqlString(q);
+            string sqlStr = q.BuildMySqlString();
 
             Report.WriteLine(sqlStr);
         }
@@ -93,7 +92,7 @@ namespace MySqlTest.TestQueryBuilder
 
 
 
-            string sqlStr = MySqlStringMaker.BuildMySqlString(q);
+            string sqlStr = q.BuildMySqlString();
 
             Report.WriteLine(sqlStr);
         }
@@ -120,8 +119,6 @@ namespace MySqlTest.TestQueryBuilder
                       .Where((u, a) => u.first_name == "m")
                       .Select((u, a) => new { u.last_name, a.streetNo });
 
-
-
         }
         //------------------------------------------------------------------------
         [Test]
@@ -130,7 +127,7 @@ namespace MySqlTest.TestQueryBuilder
             var q = Q.InsertInto<user_info>()
                     .Values(i => new user_info { first_name = "ok", last_name = "001" });
 
-            string sqlStr = MySqlStringMaker.BuildMySqlString(q);
+            string sqlStr = q.BuildMySqlString();
 
             Report.WriteLine(sqlStr);
         }
@@ -143,7 +140,7 @@ namespace MySqlTest.TestQueryBuilder
             var q = Q.InsertInto<user_info>()
                      .Values(i => new { first_name = "ok", last_name = "001" });
 
-            string sqlStr = MySqlStringMaker.BuildMySqlString(q);
+            string sqlStr = q.BuildMySqlString();
 
             Report.WriteLine(sqlStr);
         }
@@ -153,7 +150,7 @@ namespace MySqlTest.TestQueryBuilder
             var q = InsertInto<user_info>
                     .Values(i => new user_info { first_name = "ok", last_name = "001" });
 
-            string sqlStr = MySqlStringMaker.BuildMySqlString(q);
+            string sqlStr = q.BuildMySqlString();
 
             Report.WriteLine(sqlStr);
         }
@@ -166,7 +163,7 @@ namespace MySqlTest.TestQueryBuilder
             var q = InsertInto<user_info>
                      .Values(i => new { first_name = "ok", last_name = "001" });
 
-            string sqlStr = MySqlStringMaker.BuildMySqlString(q);
+            string sqlStr = q.BuildMySqlString();
 
             Report.WriteLine(sqlStr);
         }
@@ -177,7 +174,7 @@ namespace MySqlTest.TestQueryBuilder
             var q = Q.Update<user_info>()
                      .Set(u => new user_info { first_name = "ok" });
 
-            string sqlStr = MySqlStringMaker.BuildMySqlString(q);
+            string sqlStr = q.BuildMySqlString();
 
             Report.WriteLine(sqlStr);
         }
@@ -187,19 +184,20 @@ namespace MySqlTest.TestQueryBuilder
             var q = Q.Update<user_info>()
                      .Where(u => u.first_name == "mmm")
                      .Set(u => new R(u.first_name, "ok",
-                                     u.last_name, "12345"));
+                                     u.last_name, "12345"));//check at runtime
 
-            string sqlStr = MySqlStringMaker.BuildMySqlString(q);
+            string sqlStr = q.BuildMySqlString();
 
             Report.WriteLine(sqlStr);
         }
+
         [Test]
         public static void T_Update3()
         {
             var q = Update<user_info>
                      .Set(u => new user_info { first_name = "ok" });
 
-            string sqlStr = MySqlStringMaker.BuildMySqlString(q);
+            string sqlStr = q.BuildMySqlString();
 
             Report.WriteLine(sqlStr);
         }
@@ -211,7 +209,7 @@ namespace MySqlTest.TestQueryBuilder
                      .Set(u => new R(u.first_name, "ok",
                                      u.last_name, "12345"));
 
-            string sqlStr = MySqlStringMaker.BuildMySqlString(q);
+            string sqlStr = q.BuildMySqlString();
 
             Report.WriteLine(sqlStr);
         }
