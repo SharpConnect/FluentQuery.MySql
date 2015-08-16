@@ -12,12 +12,12 @@ namespace MySqlTest.TestQueryBuilder
 
     public class TestSet2
     {
+
+
+
         [Test]
         public static void T_Select()
         {
-
-
-
             var q = Q.From<user_info>()
                      .Where(u => u.first_name == "a")
                      .Select(u => new { u.uid, u.first_name });
@@ -26,6 +26,19 @@ namespace MySqlTest.TestQueryBuilder
 
             Report.WriteLine(sqlStr);
         }
+        [Test]
+        public static void T_Select1()
+        {
+
+            var q = From<user_info>
+                     .Where(u => u.first_name == "a")
+                     .Select(); //TODO: implement simple select
+
+            string sqlStr = MySqlStringMaker.BuildMySqlString(q);
+
+            Report.WriteLine(sqlStr);
+        }
+
         [Test]
         public static void T_Select2()
         {
@@ -78,7 +91,7 @@ namespace MySqlTest.TestQueryBuilder
                      .OrderBy(u => u.first_name)
                      .Select(u => new R(u.first_name, u.last_name, 20 + 5));
 
-            
+
 
             string sqlStr = MySqlStringMaker.BuildMySqlString(q);
 
@@ -106,6 +119,7 @@ namespace MySqlTest.TestQueryBuilder
                       .On((u, a) => u.first_name == a.areadCode)
                       .Where((u, a) => u.first_name == "m")
                       .Select((u, a) => new { u.last_name, a.streetNo });
+
 
 
         }

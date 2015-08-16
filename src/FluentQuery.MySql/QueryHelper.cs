@@ -61,8 +61,10 @@ namespace SharpConnect.FluentQuery
             fromQ.Where(pred);
             return fromQ;
         }
-
     }
+
+
+  
     public static class Join<T1, T2>
     {
         public static FromQry<T1, T2> Where(Expression<QueryPredicate<T1, T2>> pred)
@@ -100,7 +102,6 @@ namespace SharpConnect.FluentQuery
     {
         public static InsertQry<T> Values<TResult>(Expression<QueryProduct<T, TResult>> setClause)
         {
-
             InsertQry<T> insertQ = new InsertQry<T>();
             insertQ.Values(setClause);
             return insertQ;

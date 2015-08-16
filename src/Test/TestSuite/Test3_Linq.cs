@@ -76,7 +76,8 @@ namespace MySqlTest.TestQueryBuilder
             var userList = new MyQueryContext<user_info>();
             var q = from u in userList
                     where u.first_name == "ok"
-                    select u.first_name;
+                    select new { u.first_name, u.last_name };
+
 
             var mysqlString = q.MakeMySqlString();
 

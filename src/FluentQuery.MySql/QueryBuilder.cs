@@ -234,6 +234,12 @@ namespace SharpConnect.FluentQuery
             //TODO: implement order by
             return this;
         }
+
+        public SelectQry<T> Select()
+        {
+            var q = new SelectQry<T>(this);
+            return q;
+        }
         public SelectQry<TRsult> Select<TRsult>(Expression<QueryProduct<T, TRsult>> product)
         {
             var q = new SelectQry<TRsult>(this);
