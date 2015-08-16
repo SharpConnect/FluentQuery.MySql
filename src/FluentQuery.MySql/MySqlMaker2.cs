@@ -1,6 +1,7 @@
 ﻿//MIT 2015, EngineKit
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -16,6 +17,13 @@ using System.Threading.Tasks;
 
 namespace SharpConnect.FluentQuery
 {
+    public static class Q2
+    {
+        public static IQueryable<T> Table<T>()
+        {
+            return new MyQueryContext<T>();
+        }
+    }
 
     public static class MySqlStringMake2
     {
@@ -127,5 +135,81 @@ namespace SharpConnect.FluentQuery
         }
     }
 
+
+    class MyQueryContext<T> : IQueryable<T>
+    {
+        MyQProvider provider;
+        Expression expr;
+        public MyQueryContext()
+        {
+            this.provider = new MyQProvider();
+            this.expr = Expression.Constant(this);
+        }
+
+        public MyQueryContext(MyQProvider provider, Expression expr)
+        {
+            this.provider = provider;
+            this.expr = expr;
+        }
+        public Expression Expression
+        {
+            get
+            {
+                return this.expr;
+            }
+        }
+
+        public Type ElementType
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public IQueryProvider Provider
+        {
+            get
+            {
+                return this.provider;
+            }
+        }
+
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+
+    class MyQProvider : IQueryProvider
+    {
+
+        public IQueryable CreateQuery(Expression expression)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IQueryable<TElement> CreateQuery<TElement>(Expression expression)
+        {
+            return (IQueryable<TElement>)new MyQueryContext<TElement>(this, expression);
+        }
+
+        public object Execute(Expression expression)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResult Execute<TResult>(Expression expression)
+        {
+            throw new NotImplementedException();
+        }
+    }
 
 }

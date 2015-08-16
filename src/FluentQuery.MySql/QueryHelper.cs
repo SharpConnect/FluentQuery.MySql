@@ -53,6 +53,8 @@ namespace SharpConnect.FluentQuery
 
     }
 
+
+
     public static class From<T>
     {
         public static FromQry<T> Where(Expression<QueryPredicate<T>> pred)
