@@ -48,6 +48,8 @@ namespace MySqlTest.TestQueryBuilder
 
             Report.WriteLine(sqlStr);
         }
+
+
         [Test]
         public static void T_Select2()
         {
@@ -107,6 +109,29 @@ namespace MySqlTest.TestQueryBuilder
             Report.WriteLine(sqlStr);
         }
 
+        [Test]
+        public static void T_Select_RawWhere()
+        {
+
+            var q = From<user_info>
+                     .Where("first_name='a' and last_name='b'")
+                     .OrderBy(u => u.first_name)
+                     .Select(u => new R(u.first_name, u.last_name, 20 + 5));
+            string sqlStr = q.BuildMySqlString();
+            Report.WriteLine(sqlStr);
+        }
+
+        [Test]
+        public static void T_Select_RawSelect()
+        {
+
+            var q = From<user_info>
+                     .Where("first_name='a' and last_name='b'")
+                     .Select("first_name,last_name,20+5");
+
+            string sqlStr = q.BuildMySqlString();
+            Report.WriteLine(sqlStr);
+        }
 
         [Test]
         public static void T_Join()

@@ -208,10 +208,45 @@ namespace SharpConnect.FluentQuery
 
     }
 
+    abstract class QuerySegWhereClause
+    {
+        public abstract void WriteToWhereExpression(WhereExpression whereExpr);
+
+    }
+    class QuerySegRawWhereClause : QuerySegWhereClause
+    {
+        string simpleWhere;
+        public QuerySegRawWhereClause(string simpleWhere)
+        {
+            this.simpleWhere = simpleWhere;
+        }
+        public override void WriteToWhereExpression(WhereExpression whereExpr)
+        {
+            whereExpr.whereClause = this.simpleWhere;
+        }
+    }
+    class QuerySegExpressionWhereClause<T> : QuerySegWhereClause
+    {
+        Expression<QueryPredicate<T>> whereExpression;
+        public QuerySegExpressionWhereClause(Expression<QueryPredicate<T>> pred)
+        {
+            this.whereExpression = pred;
+        }
+        public override void WriteToWhereExpression(WhereExpression whereExpr)
+        {
+            var walker = new LinqExpressionTreeWalker();
+            walker.CreationContext = CreationContext.WhereClause;
+            walker.Start(whereExpression.Body);
+            whereExpr.whereClause = walker.GetWalkResult();
+        }
+    }
+
     public class FromQry<T> : QuerySegment
     {
 
-        List<Expression<QueryPredicate<T>>> whereClauses = new List<Expression<QueryPredicate<T>>>();
+        List<QuerySegWhereClause> whereClauses = new List<QuerySegWhereClause>();
+        List<Expression> orderByClauses = new List<Expression>();
+
         public FromQry()
         {
 
@@ -226,12 +261,17 @@ namespace SharpConnect.FluentQuery
         }
         public FromQry<T> Where(Expression<QueryPredicate<T>> wherePred)
         {
-            whereClauses.Add(wherePred);
+            whereClauses.Add(new QuerySegExpressionWhereClause<T>(wherePred));
+            return this;
+        }
+        public FromQry<T> Where(string rawWhere)
+        {
+            whereClauses.Add(new QuerySegRawWhereClause(rawWhere));
             return this;
         }
         public FromQry<T> OrderBy<TResult>(Expression<QueryProduct<T, TResult>> orderBy)
         {
-            //TODO: implement order by
+            orderByClauses.Add(orderBy);
             return this;
         }
 
@@ -250,6 +290,12 @@ namespace SharpConnect.FluentQuery
         {
             var q = new SelectQry<TRsult>(this);
             q.exprHolder = new SelectProductHolder<T, TRsult>(product);
+            return q;
+        }
+        public SelectQry<T> Select(string rawSelect)
+        {
+            var q = new SelectQry<T>(this);
+            q.rawSelect = rawSelect;
             return q;
         }
         public SelectQry<U> SelectInto<U>()
@@ -271,15 +317,10 @@ namespace SharpConnect.FluentQuery
                 LinqExpressionTreeWalker walker = new LinqExpressionTreeWalker();
                 walker.CreationContext = CreationContext.WhereClause;
 
-
                 for (int i = 0; i < j; ++i)
                 {
-                    WhereExpression whereExpr = new WhereExpression();
-
-                    var whereClause = whereClauses[i];
-                    walker.Start(whereClause.Body);
-
-                    whereExpr.whereClause = walker.GetWalkResult();
+                    var whereExpr = new WhereExpression();
+                    whereClauses[i].WriteToWhereExpression(whereExpr);
                     selectStmt.whereExpressions.Add(whereExpr);
                 }
             }
@@ -299,6 +340,7 @@ namespace SharpConnect.FluentQuery
             return new FromQry<T, U>();
         }
     }
+
     public class FromQry<T1, T2> : QuerySegment
     {
 
@@ -482,7 +524,7 @@ namespace SharpConnect.FluentQuery
         int limit0 = -1;//default
         internal ExpressionHolder exprHolder;
         internal bool SelectStar;
-
+        internal string rawSelect;
         public SelectQry(QuerySegment prev)
         {
 
@@ -516,50 +558,53 @@ namespace SharpConnect.FluentQuery
                 exprHolder.WriteToSelectStatement(selectStmt);
                 selectStmt.limit0 = limit0;
             }
+            else if (this.SelectStar)
+            {   //then select all public fields or member
+                var selExpr = new SelectExpression();
+                selExpr.selectClause = "*";
+                selectStmt.selectExpressions.Add(selExpr);
+            }
+            else if (rawSelect != null)
+            {
+                var selExpr = new SelectExpression();
+                selExpr.selectClause = rawSelect;
+                selectStmt.selectExpressions.Add(selExpr);
+            }
             else
             {
-                //then select all public fields or member
-                if (this.SelectStar)
+                Type t = typeof(T);
+                var fields = t.GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                var props = t.GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.SetProperty);
+
+                int total = fields.Length + props.Length;
+                var stBuilder = new StringBuilder();
+
+                int n = 0;
+                int j = fields.Length;
+                for (int i = 0; i < j; ++i, ++n)
                 {
-                    var selExpr = new SelectExpression();
-                    selExpr.selectClause = "*";
-                    selectStmt.selectExpressions.Add(selExpr);
+                    if (n > 0)
+                    {
+                        stBuilder.Append(',');
+                    }
+                    stBuilder.Append(fields[i].Name);
+
                 }
-                else
+                j = props.Length;
+                for (int i = 0; i < j; ++i, ++n)
                 {
-                    Type t = typeof(T);
-                    var fields = t.GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-                    var props = t.GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.SetProperty);
-
-                    int total = fields.Length + props.Length;
-                    var stBuilder = new StringBuilder();
-
-                    int n = 0;
-                    int j = fields.Length;
-                    for (int i = 0; i < j; ++i, ++n)
+                    if (n > 0)
                     {
-                        if (n > 0)
-                        {
-                            stBuilder.Append(',');
-                        }
-                        stBuilder.Append(fields[i].Name);
-
+                        stBuilder.Append(',');
                     }
-                    j = props.Length;
-                    for (int i = 0; i < j; ++i, ++n)
-                    {
-                        if (n > 0)
-                        {
-                            stBuilder.Append(',');
-                        }
-                        stBuilder.Append(fields[i].Name);
-                    }
-
-                    var selExpr = new SelectExpression();
-                    selExpr.selectClause = stBuilder.ToString();
-                    selectStmt.selectExpressions.Add(selExpr);
+                    stBuilder.Append(fields[i].Name);
                 }
+
+                var selExpr = new SelectExpression();
+                selExpr.selectClause = stBuilder.ToString();
+                selectStmt.selectExpressions.Add(selExpr);
             }
+
         }
         internal override void WriteToInsertStmt(InsertStatement insertStmt)
         {
