@@ -23,6 +23,8 @@ namespace SharpConnect.FluentQuery
         Select,
         From,
         Insert,
+        OrderBy,
+        Having,
     }
 
     class LinqExpressionTreeWalker : DynamicExpressionVisitor
@@ -208,14 +210,13 @@ namespace SharpConnect.FluentQuery
         {
             switch (CreationContext)
             {
+                case CreationContext.OrderBy:
                 case CreationContext.Select:
                     {
                         int j = node.Arguments.Count;
                         int i = 0;
                         foreach (var arg in node.Arguments)
-                        {
-
-
+                        { 
                             if (i > 0)
                             {
                                 stbuilder.Append(',');
@@ -237,6 +238,7 @@ namespace SharpConnect.FluentQuery
         {
             switch (CreationContext)
             {
+                case CreationContext.OrderBy:
                 case CreationContext.Select:
                     {
                         int j = node.Expressions.Count;

@@ -7,13 +7,15 @@ using System.Linq;
 using System.Linq.Expressions;
 
 using SharpConnect.FluentQuery;
+
+//**********
+//plan : when C#6 arrive, we can use static methods  (using static) in this context 
+//**********
 namespace MySqlTest.TestQueryBuilder
 {
 
     public class TestSet2
     {
-
-
 
         [Test]
         public static void T_Select()
@@ -102,7 +104,18 @@ namespace MySqlTest.TestQueryBuilder
                      .OrderBy(u => u.first_name)
                      .Select(u => new R(u.first_name, u.last_name, 20 + 5));
 
+            string sqlStr = q.BuildMySqlString();
 
+            Report.WriteLine(sqlStr);
+        }
+        [Test]
+        public static void T_Select_OrderBy2()
+        {
+
+            var q = From<user_info>
+                     .Where(u => u.first_name == "a")
+                     .OrderBy(u => new R(u.first_name, u.last_name))
+                     .Select(u => new R(u.first_name, u.last_name, 20 + 5));
 
             string sqlStr = q.BuildMySqlString();
 

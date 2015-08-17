@@ -245,7 +245,7 @@ namespace SharpConnect.FluentQuery
     {
 
         List<QuerySegWhereClause> whereClauses = new List<QuerySegWhereClause>();
-        List<Expression> orderByClauses = new List<Expression>();
+        List<LambdaExpression> orderByClauses = new List<LambdaExpression>();
 
         public FromQry()
         {
@@ -324,7 +324,21 @@ namespace SharpConnect.FluentQuery
                     selectStmt.whereExpressions.Add(whereExpr);
                 }
             }
+            j = orderByClauses.Count;
+            if (j > 0)
+            {
+                LinqExpressionTreeWalker walker = new LinqExpressionTreeWalker();
+                walker.CreationContext = CreationContext.OrderBy;
 
+                for (int i = 0; i < j; ++i)
+                {
+                    var orderByExpress = new OrderByExpression();
+                    walker.Start(orderByClauses[i].Body);
+                    orderByExpress.orderByClause = walker.GetWalkResult();
+                    selectStmt.orderByExpressions.Add(orderByExpress);
+
+                }
+            }
         }
         internal override void WriteToInsertStmt(InsertStatement insertStmt)
         {
