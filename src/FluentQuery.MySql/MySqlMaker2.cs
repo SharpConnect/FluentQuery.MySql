@@ -56,6 +56,10 @@ namespace SharpConnect.FluentQuery
 
                     return MySqlStringMaker.BuildMySqlString(selectStatement);
                 }
+                else
+                {
+
+                }
             }
             return "";
         }

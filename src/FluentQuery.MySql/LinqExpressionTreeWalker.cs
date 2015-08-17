@@ -520,6 +520,19 @@ namespace SharpConnect.FluentQuery
         }
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {
+
+            switch (node.Method.Name)
+            {
+                case "Count":
+                    {
+
+                    }
+                    break;
+                default:
+                    throw new NotSupportedException();
+
+            }
+
             return base.VisitMethodCall(node);
         }
         protected override Expression VisitNew(NewExpression node)

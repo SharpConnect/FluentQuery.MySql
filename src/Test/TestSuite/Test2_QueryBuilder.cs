@@ -26,18 +26,28 @@ namespace MySqlTest.TestQueryBuilder
             Report.WriteLine(sqlStr);
         }
         [Test]
-        public static void T_Select1()
+        public static void T_Select_EntireElement()
         {
 
             var q = From<user_info>
                      .Where(u => u.first_name == "a")
-                     .Select(); //TODO: implement simple select
+                     .Select();
 
             string sqlStr = q.BuildMySqlString();
 
             Report.WriteLine(sqlStr);
         }
+        [Test]
+        public static void T_Select_Star()
+        {
+            var q = From<user_info>
+                     .Where(u => u.first_name == "a")
+                     .SelectStar();
 
+            string sqlStr = q.BuildMySqlString();
+
+            Report.WriteLine(sqlStr);
+        }
         [Test]
         public static void T_Select2()
         {

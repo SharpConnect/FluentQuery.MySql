@@ -240,6 +240,12 @@ namespace SharpConnect.FluentQuery
             var q = new SelectQry<T>(this);
             return q;
         }
+        public SelectQry<T> SelectStar()
+        {
+            var q = new SelectQry<T>(this);
+            q.SelectStar = true;
+            return q;
+        }
         public SelectQry<TRsult> Select<TRsult>(Expression<QueryProduct<T, TRsult>> product)
         {
             var q = new SelectQry<TRsult>(this);
@@ -475,6 +481,8 @@ namespace SharpConnect.FluentQuery
     {
         int limit0 = -1;//default
         internal ExpressionHolder exprHolder;
+        internal bool SelectStar;
+
         public SelectQry(QuerySegment prev)
         {
 
@@ -510,7 +518,47 @@ namespace SharpConnect.FluentQuery
             }
             else
             {
-                throw new NotSupportedException();
+                //then select all public fields or member
+                if (this.SelectStar)
+                {
+                    var selExpr = new SelectExpression();
+                    selExpr.selectClause = "*";
+                    selectStmt.selectExpressions.Add(selExpr);
+                }
+                else
+                {
+                    Type t = typeof(T);
+                    var fields = t.GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                    var props = t.GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.SetProperty);
+
+                    int total = fields.Length + props.Length;
+                    var stBuilder = new StringBuilder();
+
+                    int n = 0;
+                    int j = fields.Length;
+                    for (int i = 0; i < j; ++i, ++n)
+                    {
+                        if (n > 0)
+                        {
+                            stBuilder.Append(',');
+                        }
+                        stBuilder.Append(fields[i].Name);
+
+                    }
+                    j = props.Length;
+                    for (int i = 0; i < j; ++i, ++n)
+                    {
+                        if (n > 0)
+                        {
+                            stBuilder.Append(',');
+                        }
+                        stBuilder.Append(fields[i].Name);
+                    }
+
+                    var selExpr = new SelectExpression();
+                    selExpr.selectClause = stBuilder.ToString();
+                    selectStmt.selectExpressions.Add(selExpr);
+                }
             }
         }
         internal override void WriteToInsertStmt(InsertStatement insertStmt)
