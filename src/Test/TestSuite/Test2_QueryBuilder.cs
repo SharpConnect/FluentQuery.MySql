@@ -121,7 +121,19 @@ namespace MySqlTest.TestQueryBuilder
 
             Report.WriteLine(sqlStr);
         }
+        [Test]
+        public static void T_Select_OrderByDesc()
+        {
 
+            var q = From<user_info>
+                     .Where(u => u.first_name == "a")
+                     .OrderByDesc(u => new R(u.first_name, u.last_name))
+                     .Select(u => new R(u.first_name, u.last_name, 20 + 5));
+
+            string sqlStr = q.BuildMySqlString();
+
+            Report.WriteLine(sqlStr);
+        }
         [Test]
         public static void T_Select_RawWhere()
         {

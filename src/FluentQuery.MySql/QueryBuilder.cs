@@ -241,11 +241,60 @@ namespace SharpConnect.FluentQuery
         }
     }
 
+
+    abstract class QuerySegOrderByClause
+    {
+
+        public abstract void WriteToOrderByExpression(OrderByExpression orderByEpxr);
+        /// <summary>
+        /// order by descending...
+        /// </summary>
+        public bool Desc { get; set; }
+    }
+    class QuerySegExpressionOrderByClause : QuerySegOrderByClause
+    {
+        LambdaExpression lambdaExpr;
+        public QuerySegExpressionOrderByClause(LambdaExpression lambdaExpr)
+        {
+            this.lambdaExpr = lambdaExpr;
+        }
+        public override void WriteToOrderByExpression(OrderByExpression orderByEpxr)
+        {
+            var walker = new LinqExpressionTreeWalker();
+            walker.CreationContext = CreationContext.OrderBy;
+            walker.Start(this.lambdaExpr.Body);
+            orderByEpxr.orderByClause = walker.GetWalkResult();
+            if (this.Desc)
+            {
+                orderByEpxr.orderByClause += " desc";
+            }
+
+        }
+    }
+    class QueryRawOrderByClause : QuerySegOrderByClause
+    {
+        string rawOrderByClause;
+        public QueryRawOrderByClause(string rawOrderByClause)
+        {
+            this.rawOrderByClause = rawOrderByClause;
+        }
+        public override void WriteToOrderByExpression(OrderByExpression orderByEpxr)
+        {
+            orderByEpxr.orderByClause = rawOrderByClause;
+            if (this.Desc)
+            {
+                orderByEpxr.orderByClause += " desc";
+            }
+
+        }
+    }
+
+
     public class FromQry<T> : QuerySegment
     {
 
         List<QuerySegWhereClause> whereClauses = new List<QuerySegWhereClause>();
-        List<LambdaExpression> orderByClauses = new List<LambdaExpression>();
+        List<QuerySegOrderByClause> orderByClauses = new List<QuerySegOrderByClause>();
 
         public FromQry()
         {
@@ -269,12 +318,38 @@ namespace SharpConnect.FluentQuery
             whereClauses.Add(new QuerySegRawWhereClause(rawWhere));
             return this;
         }
+        /// <summary>
+        /// order by asc
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="orderBy"></param>
+        /// <returns></returns>
         public FromQry<T> OrderBy<TResult>(Expression<QueryProduct<T, TResult>> orderBy)
         {
-            orderByClauses.Add(orderBy);
+            orderByClauses.Add(new QuerySegExpressionOrderByClause(orderBy));
             return this;
         }
+        public FromQry<T> OrderByDesc<TResult>(Expression<QueryProduct<T, TResult>> orderBy)
+        {
+            var orderByClause = new QuerySegExpressionOrderByClause(orderBy);
+            orderByClause.Desc = true;
+            orderByClauses.Add(orderByClause);
+            return this;
+        }
+        public FromQry<T> OrderBy(string rawOrderBy)
+        {
+            var orderByClause = new QueryRawOrderByClause(rawOrderBy);
+            orderByClauses.Add(orderByClause);
+            return this;
 
+        }
+        public FromQry<T> OrderByDesc(string rawOrderBy)
+        {
+            var orderByClause = new QueryRawOrderByClause(rawOrderBy);
+            orderByClause.Desc = true;
+            orderByClauses.Add(orderByClause);
+            return this;
+        }
         public SelectQry<T> Select()
         {
             var q = new SelectQry<T>(this);
@@ -314,8 +389,6 @@ namespace SharpConnect.FluentQuery
             if (j > 0)
             {
                 //create where clause
-                LinqExpressionTreeWalker walker = new LinqExpressionTreeWalker();
-                walker.CreationContext = CreationContext.WhereClause;
 
                 for (int i = 0; i < j; ++i)
                 {
@@ -327,16 +400,12 @@ namespace SharpConnect.FluentQuery
             j = orderByClauses.Count;
             if (j > 0)
             {
-                LinqExpressionTreeWalker walker = new LinqExpressionTreeWalker();
-                walker.CreationContext = CreationContext.OrderBy;
 
                 for (int i = 0; i < j; ++i)
                 {
-                    var orderByExpress = new OrderByExpression();
-                    walker.Start(orderByClauses[i].Body);
-                    orderByExpress.orderByClause = walker.GetWalkResult();
-                    selectStmt.orderByExpressions.Add(orderByExpress);
-
+                    var orderByExpr = new OrderByExpression();
+                    orderByClauses[i].WriteToOrderByExpression(orderByExpr);
+                    selectStmt.orderByExpressions.Add(orderByExpr);
                 }
             }
         }
