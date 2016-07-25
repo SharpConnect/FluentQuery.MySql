@@ -1,11 +1,10 @@
-﻿//MIT 2015, EngineKit
+﻿//MIT, 2015-2016, EngineKit and contributors
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
-using System.Threading.Tasks;
 
 //---------------------------------------
 //Warning

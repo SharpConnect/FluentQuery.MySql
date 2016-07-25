@@ -1,11 +1,7 @@
-﻿//MIT 2015,  EngineKit and contributors
+﻿//MIT, 2015-2016, EngineKit and contributors
 
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Text;
+
 using System.Linq;
-using System.Linq.Expressions;
 using SharpConnect.FluentQuery;
 
 
@@ -81,7 +77,7 @@ namespace MySqlTest.TestQueryBuilder
                     group u by u.first_name into g
                     where g.Count() > 0
                     select g.Count();
-            
+
             //select count(*) from user_info
             //where first_name !='' 
             //group by first_name;

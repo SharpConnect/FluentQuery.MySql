@@ -1,19 +1,12 @@
-﻿//MIT 2015, EngineKit
-
-using System;
-using System.Collections.Generic;
+﻿//MIT, 2015-2016, EngineKit and contributors 
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
-
 //---------------------------------------
 //Warning
 //concept/test only 
 //-------------------------------------
 //TODO: use ExpressionTree Walker  ***
-//-------------------------------------
-
+//------------------------------------- 
 namespace SharpConnect.FluentQuery
 {
 
@@ -69,7 +62,7 @@ namespace SharpConnect.FluentQuery
             fromQ.Where(rawWhere);
             return fromQ;
         }
-       
+
     }
 
 

@@ -1,10 +1,5 @@
-﻿//MIT 2015,  EngineKit and contributors
-
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Linq;
-using System.Linq.Expressions;
+﻿//MIT, 2015-2016, EngineKit and contributors
+ 
 
 using SharpConnect.FluentQuery;
 

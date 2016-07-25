@@ -1,4 +1,4 @@
-﻿//MIT 2015, EngineKit
+﻿//MIT, 2015-2016, EngineKit and contributors
 
 using System;
 using System.Collections;

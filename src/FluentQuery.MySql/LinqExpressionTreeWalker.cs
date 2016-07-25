@@ -1,11 +1,8 @@
-﻿//MIT 2015, EngineKit
+﻿//MIT, 2015-2016, EngineKit and contributors
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
-using System.Threading.Tasks;
 
 //---------------------------------------
 //Warning
@@ -216,7 +213,7 @@ namespace SharpConnect.FluentQuery
                         int j = node.Arguments.Count;
                         int i = 0;
                         foreach (var arg in node.Arguments)
-                        { 
+                        {
                             if (i > 0)
                             {
                                 stbuilder.Append(',');
