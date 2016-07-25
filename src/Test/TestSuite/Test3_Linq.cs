@@ -8,6 +8,7 @@ using SharpConnect.FluentQuery;
 //**************************
 //test concept only
 //**************************
+using static SharpConnect.FluentQuery.Q3;
 
 namespace MySqlTest.TestQueryBuilder
 {
@@ -22,12 +23,17 @@ namespace MySqlTest.TestQueryBuilder
             var q = from u in Q2.Provide<user_info>()
                     where u.first_name == "ok" && u.last_name == "mm"
                     select new { u.first_name, u.last_name };
-
-
             var mysqlString = q.MakeMySqlString();
-
         }
+        [Test]
+        public static void T_Select_Linq_1()
+        {
 
+            var q = from u in _db<user_info>()
+                    where u.first_name == "ok" && u.last_name == "mm"
+                    select new { u.first_name, u.last_name };
+            var mysqlString = q.MakeMySqlString();
+        }
 
         [Test]
         public static void T_Select_Linq2()
@@ -36,12 +42,19 @@ namespace MySqlTest.TestQueryBuilder
             var q = from u in Q2.Provide<user_info>()
                     where u.first_name == "ok" || u.last_name == "mm"
                     select new { u.first_name, u.last_name };
-
-
             var mysqlString = q.MakeMySqlString();
 
         }
+        [Test]
+        public static void T_Select_Linq2_1()
+        {
 
+            var q = from u in _db<user_info>()
+                    where u.first_name == "ok" || u.last_name == "mm"
+                    select new { u.first_name, u.last_name };
+            var mysqlString = q.MakeMySqlString();
+
+        }
 
         [Test]
         public static void T_Select_Linq2_limit()
@@ -49,13 +62,19 @@ namespace MySqlTest.TestQueryBuilder
 
             var q = from u in Q2.Provide<user_info>()
                     where u.first_name == "ok" || u.last_name == "mm"
+                    select new { u.first_name, u.last_name }; 
+            q.Limit(10);  
+            var mysqlString = q.MakeMySqlString(); 
+        }
+        [Test]
+        public static void T_Select_Linq2_1_limit()
+        {
+
+            var q = from u in _db<user_info>()
+                    where u.first_name == "ok" || u.last_name == "mm"
                     select new { u.first_name, u.last_name };
-
             q.Limit(10);
-
-
             var mysqlString = q.MakeMySqlString();
-
         }
         [Test]
         public static void T_Select_Linq_GroupBy1()
@@ -63,8 +82,7 @@ namespace MySqlTest.TestQueryBuilder
 
             var q = from u in Q2.Provide<user_info>()
                     group u by u.first_name into g
-                    select g.Count();
-
+                    select g.Count(); 
 
             var mysqlString = q.MakeMySqlString();
 

@@ -24,7 +24,13 @@ namespace SharpConnect.FluentQuery
             return new MyQueryContext<T>();
         }
     }
-
+    public static class Q3
+    {
+        public static IQueryable<T> _db<T>()
+        {
+            return new MyQueryContext<T>();
+        }
+    }
     public static class MySqlExtension
     {
         public static IQueryable<T> Limit<T>(this IQueryable<T> q, int limit)
@@ -74,9 +80,7 @@ namespace SharpConnect.FluentQuery
             //select 
             WhereExpression whereExpr = null;
             SelectExpression selectExpr = null;
-
-
-
+             
             foreach (var arg in callExpr.Arguments)
             {
 
@@ -120,10 +124,7 @@ namespace SharpConnect.FluentQuery
                                     else
                                     {
                                         throw new NotSupportedException();
-                                    }
-
-
-
+                                    } 
                                     whereExpr = new WhereExpression();
                                     whereExpr.whereClause = linqWalker2.GetWalkResult();
                                     selectStmt.whereExpressions.Add(whereExpr);
