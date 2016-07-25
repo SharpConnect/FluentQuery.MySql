@@ -1,4 +1,4 @@
-﻿//MIT 2015, EngineKit
+﻿//MIT, 2015-2016, EngineKit and contributors
 
 using System;
 using System.Collections.Generic;
@@ -34,6 +34,8 @@ namespace SharpConnect.FluentQuery
         public List<FromExpression> fromExpressions = new List<FromExpression>();
         public List<SelectExpression> selectExpressions = new List<SelectExpression>();
         public List<WhereExpression> whereExpressions = new List<WhereExpression>();
+        public List<OrderByExpression> orderByExpressions = new List<OrderByExpression>();
+
         public int limit0 = -1;
         public override CodeStatementKind StatementKind
         {
@@ -76,7 +78,10 @@ namespace SharpConnect.FluentQuery
     public class WhereExpression : CodeExpression
     {
         public string whereClause;
-
+    }
+    public class OrderByExpression : CodeExpression
+    {
+        public string orderByClause;
     }
 
     public class FromExpression : CodeExpression
@@ -91,7 +96,7 @@ namespace SharpConnect.FluentQuery
 
     public static class MySqlStringMaker
     {
-        public static string BuildMySqlString(QuerySegment q)
+        public static string BuildMySqlString(this QuerySegment q)
         {
             var codeStmt = q.MakeCodeStatement();
             switch (codeStmt.StatementKind)
@@ -130,7 +135,12 @@ namespace SharpConnect.FluentQuery
                 stbuilder.Append(" where ");
                 stbuilder.Append(selectStmt.whereExpressions[0].whereClause);
             }
-
+            j = selectStmt.orderByExpressions.Count;
+            if (j > 0)
+            {
+                stbuilder.Append(" order by ");
+                stbuilder.Append(selectStmt.orderByExpressions[0].orderByClause);
+            }
             if (limit0 >= 0)
             {
                 stbuilder.Append(" limit " + limit0);

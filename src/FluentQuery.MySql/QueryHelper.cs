@@ -1,19 +1,12 @@
-﻿//MIT 2015, EngineKit
-
-using System;
-using System.Collections.Generic;
+﻿//MIT, 2015-2016, EngineKit and contributors 
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
-
 //---------------------------------------
 //Warning
 //concept/test only 
 //-------------------------------------
 //TODO: use ExpressionTree Walker  ***
-//-------------------------------------
-
+//------------------------------------- 
 namespace SharpConnect.FluentQuery
 {
 
@@ -53,6 +46,8 @@ namespace SharpConnect.FluentQuery
 
     }
 
+
+
     public static class From<T>
     {
         public static FromQry<T> Where(Expression<QueryPredicate<T>> pred)
@@ -61,8 +56,17 @@ namespace SharpConnect.FluentQuery
             fromQ.Where(pred);
             return fromQ;
         }
+        public static FromQry<T> Where(string rawWhere)
+        {
+            FromQry<T> fromQ = new FromQry<T>();
+            fromQ.Where(rawWhere);
+            return fromQ;
+        }
 
     }
+
+
+
     public static class Join<T1, T2>
     {
         public static FromQry<T1, T2> Where(Expression<QueryPredicate<T1, T2>> pred)
@@ -100,7 +104,6 @@ namespace SharpConnect.FluentQuery
     {
         public static InsertQry<T> Values<TResult>(Expression<QueryProduct<T, TResult>> setClause)
         {
-
             InsertQry<T> insertQ = new InsertQry<T>();
             insertQ.Values(setClause);
             return insertQ;

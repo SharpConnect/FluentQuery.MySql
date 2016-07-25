@@ -1,11 +1,10 @@
-﻿//MIT 2015, EngineKit
+﻿//MIT, 2015-2016, EngineKit and contributors
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
-using System.Threading.Tasks;
 
 //---------------------------------------
 //Warning
@@ -208,10 +207,94 @@ namespace SharpConnect.FluentQuery
 
     }
 
+    abstract class QuerySegWhereClause
+    {
+        public abstract void WriteToWhereExpression(WhereExpression whereExpr);
+
+    }
+    class QuerySegRawWhereClause : QuerySegWhereClause
+    {
+        string simpleWhere;
+        public QuerySegRawWhereClause(string simpleWhere)
+        {
+            this.simpleWhere = simpleWhere;
+        }
+        public override void WriteToWhereExpression(WhereExpression whereExpr)
+        {
+            whereExpr.whereClause = this.simpleWhere;
+        }
+    }
+    class QuerySegExpressionWhereClause<T> : QuerySegWhereClause
+    {
+        Expression<QueryPredicate<T>> whereExpression;
+        public QuerySegExpressionWhereClause(Expression<QueryPredicate<T>> pred)
+        {
+            this.whereExpression = pred;
+        }
+        public override void WriteToWhereExpression(WhereExpression whereExpr)
+        {
+            var walker = new LinqExpressionTreeWalker();
+            walker.CreationContext = CreationContext.WhereClause;
+            walker.Start(whereExpression.Body);
+            whereExpr.whereClause = walker.GetWalkResult();
+        }
+    }
+
+
+    abstract class QuerySegOrderByClause
+    {
+
+        public abstract void WriteToOrderByExpression(OrderByExpression orderByEpxr);
+        /// <summary>
+        /// order by descending...
+        /// </summary>
+        public bool Desc { get; set; }
+    }
+    class QuerySegExpressionOrderByClause : QuerySegOrderByClause
+    {
+        LambdaExpression lambdaExpr;
+        public QuerySegExpressionOrderByClause(LambdaExpression lambdaExpr)
+        {
+            this.lambdaExpr = lambdaExpr;
+        }
+        public override void WriteToOrderByExpression(OrderByExpression orderByEpxr)
+        {
+            var walker = new LinqExpressionTreeWalker();
+            walker.CreationContext = CreationContext.OrderBy;
+            walker.Start(this.lambdaExpr.Body);
+            orderByEpxr.orderByClause = walker.GetWalkResult();
+            if (this.Desc)
+            {
+                orderByEpxr.orderByClause += " desc";
+            }
+
+        }
+    }
+    class QueryRawOrderByClause : QuerySegOrderByClause
+    {
+        string rawOrderByClause;
+        public QueryRawOrderByClause(string rawOrderByClause)
+        {
+            this.rawOrderByClause = rawOrderByClause;
+        }
+        public override void WriteToOrderByExpression(OrderByExpression orderByEpxr)
+        {
+            orderByEpxr.orderByClause = rawOrderByClause;
+            if (this.Desc)
+            {
+                orderByEpxr.orderByClause += " desc";
+            }
+
+        }
+    }
+
+
     public class FromQry<T> : QuerySegment
     {
 
-        List<Expression<QueryPredicate<T>>> whereClauses = new List<Expression<QueryPredicate<T>>>();
+        List<QuerySegWhereClause> whereClauses = new List<QuerySegWhereClause>();
+        List<QuerySegOrderByClause> orderByClauses = new List<QuerySegOrderByClause>();
+
         public FromQry()
         {
 
@@ -226,18 +309,67 @@ namespace SharpConnect.FluentQuery
         }
         public FromQry<T> Where(Expression<QueryPredicate<T>> wherePred)
         {
-            whereClauses.Add(wherePred);
+            whereClauses.Add(new QuerySegExpressionWhereClause<T>(wherePred));
             return this;
         }
+        public FromQry<T> Where(string rawWhere)
+        {
+            whereClauses.Add(new QuerySegRawWhereClause(rawWhere));
+            return this;
+        }
+        /// <summary>
+        /// order by asc
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="orderBy"></param>
+        /// <returns></returns>
         public FromQry<T> OrderBy<TResult>(Expression<QueryProduct<T, TResult>> orderBy)
         {
-            //TODO: implement order by
+            orderByClauses.Add(new QuerySegExpressionOrderByClause(orderBy));
             return this;
+        }
+        public FromQry<T> OrderByDesc<TResult>(Expression<QueryProduct<T, TResult>> orderBy)
+        {
+            var orderByClause = new QuerySegExpressionOrderByClause(orderBy);
+            orderByClause.Desc = true;
+            orderByClauses.Add(orderByClause);
+            return this;
+        }
+        public FromQry<T> OrderBy(string rawOrderBy)
+        {
+            var orderByClause = new QueryRawOrderByClause(rawOrderBy);
+            orderByClauses.Add(orderByClause);
+            return this;
+
+        }
+        public FromQry<T> OrderByDesc(string rawOrderBy)
+        {
+            var orderByClause = new QueryRawOrderByClause(rawOrderBy);
+            orderByClause.Desc = true;
+            orderByClauses.Add(orderByClause);
+            return this;
+        }
+        public SelectQry<T> Select()
+        {
+            var q = new SelectQry<T>(this);
+            return q;
+        }
+        public SelectQry<T> SelectStar()
+        {
+            var q = new SelectQry<T>(this);
+            q.SelectStar = true;
+            return q;
         }
         public SelectQry<TRsult> Select<TRsult>(Expression<QueryProduct<T, TRsult>> product)
         {
             var q = new SelectQry<TRsult>(this);
             q.exprHolder = new SelectProductHolder<T, TRsult>(product);
+            return q;
+        }
+        public SelectQry<T> Select(string rawSelect)
+        {
+            var q = new SelectQry<T>(this);
+            q.rawSelect = rawSelect;
             return q;
         }
         public SelectQry<U> SelectInto<U>()
@@ -256,22 +388,25 @@ namespace SharpConnect.FluentQuery
             if (j > 0)
             {
                 //create where clause
-                LinqExpressionTreeWalker walker = new LinqExpressionTreeWalker();
-                walker.CreationContext = CreationContext.WhereClause;
-
 
                 for (int i = 0; i < j; ++i)
                 {
-                    WhereExpression whereExpr = new WhereExpression();
-
-                    var whereClause = whereClauses[i];
-                    walker.Start(whereClause.Body);
-
-                    whereExpr.whereClause = walker.GetWalkResult();
+                    var whereExpr = new WhereExpression();
+                    whereClauses[i].WriteToWhereExpression(whereExpr);
                     selectStmt.whereExpressions.Add(whereExpr);
                 }
             }
+            j = orderByClauses.Count;
+            if (j > 0)
+            {
 
+                for (int i = 0; i < j; ++i)
+                {
+                    var orderByExpr = new OrderByExpression();
+                    orderByClauses[i].WriteToOrderByExpression(orderByExpr);
+                    selectStmt.orderByExpressions.Add(orderByExpr);
+                }
+            }
         }
         internal override void WriteToInsertStmt(InsertStatement insertStmt)
         {
@@ -287,6 +422,7 @@ namespace SharpConnect.FluentQuery
             return new FromQry<T, U>();
         }
     }
+
     public class FromQry<T1, T2> : QuerySegment
     {
 
@@ -469,6 +605,8 @@ namespace SharpConnect.FluentQuery
     {
         int limit0 = -1;//default
         internal ExpressionHolder exprHolder;
+        internal bool SelectStar;
+        internal string rawSelect;
         public SelectQry(QuerySegment prev)
         {
 
@@ -502,10 +640,53 @@ namespace SharpConnect.FluentQuery
                 exprHolder.WriteToSelectStatement(selectStmt);
                 selectStmt.limit0 = limit0;
             }
+            else if (this.SelectStar)
+            {   //then select all public fields or member
+                var selExpr = new SelectExpression();
+                selExpr.selectClause = "*";
+                selectStmt.selectExpressions.Add(selExpr);
+            }
+            else if (rawSelect != null)
+            {
+                var selExpr = new SelectExpression();
+                selExpr.selectClause = rawSelect;
+                selectStmt.selectExpressions.Add(selExpr);
+            }
             else
             {
-                throw new NotSupportedException();
+                Type t = typeof(T);
+                var fields = t.GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                var props = t.GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.GetProperty | System.Reflection.BindingFlags.SetProperty);
+
+                int total = fields.Length + props.Length;
+                var stBuilder = new StringBuilder();
+
+                int n = 0;
+                int j = fields.Length;
+                for (int i = 0; i < j; ++i, ++n)
+                {
+                    if (n > 0)
+                    {
+                        stBuilder.Append(',');
+                    }
+                    stBuilder.Append(fields[i].Name);
+
+                }
+                j = props.Length;
+                for (int i = 0; i < j; ++i, ++n)
+                {
+                    if (n > 0)
+                    {
+                        stBuilder.Append(',');
+                    }
+                    stBuilder.Append(fields[i].Name);
+                }
+
+                var selExpr = new SelectExpression();
+                selExpr.selectClause = stBuilder.ToString();
+                selectStmt.selectExpressions.Add(selExpr);
             }
+
         }
         internal override void WriteToInsertStmt(InsertStatement insertStmt)
         {

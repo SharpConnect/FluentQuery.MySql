@@ -49,6 +49,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestSuite\Test2_QueryBuilder.cs" />
+    <Compile Include="TestSuite\Test3_Linq.cs" />
     <Compile Include="TestSuite\TestSuite.cs" />
     <EmbeddedResource Include="FormTestSuite.resx">
       <DependentUpon>FormTestSuite.cs</DependentUpon>
