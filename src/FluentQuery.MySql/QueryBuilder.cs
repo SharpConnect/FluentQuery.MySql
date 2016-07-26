@@ -425,7 +425,7 @@ namespace SharpConnect.FluentQuery
 
     public class FromQry<T1, T2> : QuerySegment
     {
-
+        List<Expression<QueryPredicate<T1, T2>>> onClauses = new List<Expression<QueryPredicate<T1, T2>>>();
         List<Expression<QueryPredicate<T1, T2>>> whereClauses = new List<Expression<QueryPredicate<T1, T2>>>();
         public FromQry()
         {
@@ -438,6 +438,11 @@ namespace SharpConnect.FluentQuery
             {
                 return QuerySegmentKind.DataSource;
             }
+        }
+        public FromQry<T1, T2> On(Expression<QueryPredicate<T1, T2>> wherePred)
+        {
+            onClauses.Add(wherePred);
+            return this;
         }
         public FromQry<T1, T2> Where(Expression<QueryPredicate<T1, T2>> wherePred)
         {

@@ -24,6 +24,19 @@ namespace SharpConnect.FluentQuery
         {
             return new FromQry<T>();
         }
+        public static FromQry<T1, T2> From<T1, T2>()
+        {
+            return new FromQry<T1, T2>(); ;
+        }
+        public static FromQry<T1, T2> From<T1, T2>(T1 s1, T2 s2)
+        {
+            return new FromQry<T1, T2>(); ;
+        }
+        public static FromQry<T1, T2> Join<T1, T2>()
+        {
+            return new FromQry<T1, T2>(); ;
+        }
+      
         /// <summary>
         /// insert into
         /// </summary>
@@ -44,70 +57,83 @@ namespace SharpConnect.FluentQuery
         }
 
 
-    }
-
-
-
-    public static class From<T>
-    {
-        public static FromQry<T> Where(Expression<QueryPredicate<T>> pred)
-        {
-            FromQry<T> fromQ = new FromQry<T>();
-            fromQ.Where(pred);
-            return fromQ;
-        }
-        public static FromQry<T> Where(string rawWhere)
-        {
-            FromQry<T> fromQ = new FromQry<T>();
-            fromQ.Where(rawWhere);
-            return fromQ;
-        }
-
-    }
-
-
-
-    public static class Join<T1, T2>
-    {
-        public static FromQry<T1, T2> Where(Expression<QueryPredicate<T1, T2>> pred)
+        public static FromQry<T1, T2> Where<T1, T2>(Expression<QueryPredicate<T1, T2>> pred)
         {
             FromQry<T1, T2> fromQ = new FromQry<T1, T2>();
             fromQ.Where(pred);
             return fromQ;
         }
-        public static FromQry<T1, T2> On(Expression<QueryPredicate<T1, T2>> pred)
+        public static FromQry<T1, T2> On<T1, T2>(Expression<QueryPredicate<T1, T2>> pred)
         {
             FromQry<T1, T2> fromQ = new FromQry<T1, T2>();
             fromQ.Where(pred);
             return fromQ;
         }
+
     }
 
 
-    public static class Update<T>
-    {
-        public static UpdateQry<T> Where(Expression<QueryPredicate<T>> pred)
-        {
-            UpdateQry<T> updateQ = new UpdateQry<T>();
-            updateQ.Where(pred);
-            return updateQ;
-        }
-        public static UpdateQry<T> Set<TResult>(Expression<QueryProduct<T, TResult>> setClause)
-        {
-            UpdateQry<T> updateQ = new UpdateQry<T>();
-            updateQ.Set(setClause);
-            return updateQ;
 
-        }
-    }
-    public static class InsertInto<T>
-    {
-        public static InsertQry<T> Values<TResult>(Expression<QueryProduct<T, TResult>> setClause)
-        {
-            InsertQry<T> insertQ = new InsertQry<T>();
-            insertQ.Values(setClause);
-            return insertQ;
+    //public static class From<T>
+    //{
+    //    public static FromQry<T> Where(Expression<QueryPredicate<T>> pred)
+    //    {
+    //        FromQry<T> fromQ = new FromQry<T>();
+    //        fromQ.Where(pred);
+    //        return fromQ;
+    //    }
+    //    public static FromQry<T> Where(string rawWhere)
+    //    {
+    //        FromQry<T> fromQ = new FromQry<T>();
+    //        fromQ.Where(rawWhere);
+    //        return fromQ;
+    //    }
 
-        }
-    }
+    //}
+
+
+
+    //public static class Join<T1, T2>
+    //{
+    //    public static FromQry<T1, T2> Where(Expression<QueryPredicate<T1, T2>> pred)
+    //    {
+    //        FromQry<T1, T2> fromQ = new FromQry<T1, T2>();
+    //        fromQ.Where(pred);
+    //        return fromQ;
+    //    }
+    //    public static FromQry<T1, T2> On(Expression<QueryPredicate<T1, T2>> pred)
+    //    {
+    //        FromQry<T1, T2> fromQ = new FromQry<T1, T2>();
+    //        fromQ.Where(pred);
+    //        return fromQ;
+    //    }
+    //}
+
+
+    //public static class Update<T>
+    //{
+    //    public static UpdateQry<T> Where(Expression<QueryPredicate<T>> pred)
+    //    {
+    //        UpdateQry<T> updateQ = new UpdateQry<T>();
+    //        updateQ.Where(pred);
+    //        return updateQ;
+    //    }
+    //    public static UpdateQry<T> Set<TResult>(Expression<QueryProduct<T, TResult>> setClause)
+    //    {
+    //        UpdateQry<T> updateQ = new UpdateQry<T>();
+    //        updateQ.Set(setClause);
+    //        return updateQ;
+
+    //    }
+    //}
+    //public static class InsertInto<T>
+    //{
+    //    public static InsertQry<T> Values<TResult>(Expression<QueryProduct<T, TResult>> setClause)
+    //    {
+    //        InsertQry<T> insertQ = new InsertQry<T>();
+    //        insertQ.Values(setClause);
+    //        return insertQ;
+
+    //    }
+    //}
 }

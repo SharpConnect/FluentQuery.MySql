@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Windows.Forms;
 
 using System.Diagnostics;
- 
+
 using MySqlTest;
 
 namespace MySqlClient
@@ -21,7 +21,7 @@ namespace MySqlClient
             listboxTestCases.DoubleClick += ListboxTestCases_DoubleClick;
             LoadTestCases();
 
-          
+
         }
         void LoadTestCases()
         {
@@ -47,6 +47,10 @@ namespace MySqlClient
                 this.textBox1.Text = Report.GetReportText();
             }
         }
-         
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            MySqlTest.TestQueryBuilder.TestSet2.T_Insert();
+        }
     }
 }
