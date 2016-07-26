@@ -1,11 +1,11 @@
 # FluentQuery.MySql
-C# lover's MySQL FluentQuery
+This is a simple MySql Query String Builder.
 
 license: MIT
 
 (( under construction ... ))
 ---
-This is a simple MySql Query String Builder.
+
 
 You can build query string with  'using static'
 
