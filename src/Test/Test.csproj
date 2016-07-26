@@ -51,6 +51,7 @@
     <Compile Include="TestSuite\Test2_QueryBuilder.cs" />
     <Compile Include="TestSuite\Test3_Linq.cs" />
     <Compile Include="TestSuite\Test4_UsingStatic.cs" />
+    <Compile Include="TestSuite\Test5_MapperExperiment.cs" />
     <Compile Include="TestSuite\TestSuite.cs" />
     <EmbeddedResource Include="FormTestSuite.resx">
       <DependentUpon>FormTestSuite.cs</DependentUpon>
